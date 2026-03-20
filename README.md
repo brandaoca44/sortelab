@@ -1,17 +1,23 @@
 # SorteLab
 
-Aplicação web desenvolvida para consulta de resultados, estatísticas e tendências de jogos e loterias, com foco em experiência do usuário, organização de dados e performance.
+Aplicação web desenvolvida com foco em uma experiência sofisticada de consulta, organização e visualização de resultados e tendências.
 
 ## 🚀 Visão do produto
 
-O SorteLab foi projetado como uma plataforma centralizada para acesso rápido a informações relevantes, unindo:
+O SorteLab foi concebido como uma plataforma moderna, com proposta de oferecer uma experiência mais refinada e eficiente para acesso a dados, unindo clareza visual, organização estrutural e facilidade de navegação.
 
-- Resultados atualizados
-- Organização por bancas
-- Visualização clara de dados
-- Estrutura escalável para novas funcionalidades
+A aplicação vai além da simples exibição de resultados, estruturando informações de forma inteligente para facilitar a tomada de decisão e a leitura rápida.
 
-A proposta é transformar um fluxo de consulta comum em uma experiência mais eficiente e intuitiva.
+---
+
+## ✨ Diferenciais
+
+- Interface com design limpo e consistente
+- Organização de informações por contexto (bancas, loterias, estatísticas)
+- Navegação intuitiva e objetiva
+- Estrutura pensada para escalabilidade
+- Componentização reutilizável
+- Experiência fluida em diferentes dispositivos
 
 ---
 
@@ -55,10 +61,10 @@ A proposta é transformar um fluxo de consulta comum em uma experiência mais ef
 
 O projeto foi estruturado com foco em separação de responsabilidades:
 
-app/ # rotas e páginas
-components/ # componentes reutilizáveis
-public/ # assets estáticos
-screenshots/ # imagens do projeto
+- app/ # rotas e páginas
+- components/ # componentes reutilizáveis
+- public/ # assets estáticos
+- screenshots/ # imagens do projeto
 
 
 Uso de componentização para manter o código escalável e de fácil manutenção.
@@ -76,15 +82,17 @@ Uso de componentização para manter o código escalável e de fácil manutenç�
 
 ## 📈 Evolução
 
-O projeto foi desenvolvido com mentalidade de produto, permitindo futuras melhorias como:
-
-- Integração com API em tempo real
-- Sistema de autenticação
-- Personalização de usuário
-- Histórico avançado e análises
+A aplicação foi estruturada para permitir evolução contínua, com possibilidade de integração futura com APIs em tempo real, personalização de usuário e expansão de funcionalidades analíticas.
 
 ---
 
 ## 📌 Considerações
 
 Projeto desenvolvido com foco em prática real de desenvolvimento, organização de código e construção de aplicações completas.
+
+---
+
+**Caíque Brandão**  
+Desenvolvedor focado na criação de aplicações modernas, organizadas e orientadas à experiência do usuário.  
+
+[LinkedIn](https://www.linkedin.com/in/caique-brandão-47319537b) • [GitHub](https://github.com/brandaoca44)

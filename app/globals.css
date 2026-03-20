@@ -1,8 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #040816;
+  --background-soft: #08101f;
+  --foreground: #f8fafc;
+
+  --surface-1: rgba(255, 255, 255, 0.03);
+  --surface-2: rgba(255, 255, 255, 0.045);
+  --surface-3: rgba(15, 23, 42, 0.58);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  --muted: #a1a1aa;
+  --muted-2: #94a3b8;
+  --title: #ffffff;
+
+  --primary: #f5c451;
+  --primary-strong: #e7b63d;
+  --primary-soft: rgba(245, 196, 81, 0.1);
+  --primary-border: rgba(245, 196, 81, 0.22);
+
+  --success: #22c55e;
+  --success-soft: rgba(34, 197, 94, 0.12);
+  --success-border: rgba(34, 197, 94, 0.22);
+
+  --danger: #ef4444;
+
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.25);
+  --shadow-gold: 0 10px 24px rgba(245, 196, 81, 0.14);
 }
 
 @theme inline {
@@ -12,15 +38,408 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(circle at top, rgba(245, 196, 81, 0.08), transparent 24%),
+    radial-gradient(circle at top right, rgba(255, 255, 255, 0.04), transparent 18%),
+    linear-gradient(180deg, #060b1a 0%, #040816 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.container {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Seleção */
+::selection {
+  background: rgba(245, 196, 81, 0.24);
+  color: white;
+}
+
+/* =========================
+   TOKENS VISUAIS
+========================= */
+
+.text-title {
+  color: var(--title);
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.text-muted-2 {
+  color: var(--muted-2);
+}
+
+.text-gold {
+  color: var(--primary);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.title-premium {
+  color: var(--title);
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 18px rgba(245, 196, 81, 0.06);
+}
+
+.subtitle-soft {
+  color: var(--muted);
+}
+
+/* =========================
+   SUPERFÍCIES
+========================= */
+
+.surface-page {
+  background: transparent;
+}
+
+.surface-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+}
+
+.surface-card-strong {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+}
+
+.surface-soft {
+  background: var(--surface-3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.surface-card:hover,
+.surface-card-strong:hover,
+.surface-soft:hover {
+  border-color: var(--primary-border);
+  transition: all 0.2s ease;
+}
+
+/* aliases para o que já estamos usando */
+.card-premium {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+}
+
+.card-soft {
+  background: rgba(15, 23, 42, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.card-premium:hover,
+.card-soft:hover {
+  border-color: rgba(245, 196, 81, 0.22);
+  transition: all 0.2s ease;
+}
+
+/* =========================
+   BADGES
+========================= */
+
+.badge-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--primary-border);
+  background: var(--primary-soft);
+  color: var(--primary);
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--success-border);
+  background: var(--success-soft);
+  color: var(--success);
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* alias legado */
+.badge-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 196, 81, 0.22);
+  background: rgba(245, 196, 81, 0.09);
+  color: #f5c451;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* =========================
+   BOTÕES
+========================= */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0b1020;
+  background: linear-gradient(180deg, #f5c451 0%, #e8b73f 100%);
+  box-shadow:
+    0 8px 18px rgba(245, 196, 81, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow:
+    0 12px 24px rgba(245, 196, 81, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(245, 196, 81, 0.16);
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  background: rgba(245, 196, 81, 0.06);
+  border-color: rgba(245, 196, 81, 0.28);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(245, 196, 81, 0.18);
+}
+
+.btn-success {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #04110a;
+  background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+  box-shadow: 0 8px 18px rgba(34, 197, 94, 0.16);
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.btn-success:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+/* aliases pro código já existente */
+.btn-casino {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0b1020;
+  background: linear-gradient(180deg, #f5c451 0%, #e8b73f 100%);
+  box-shadow:
+    0 8px 18px rgba(245, 196, 81, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-casino:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+  box-shadow:
+    0 12px 24px rgba(245, 196, 81, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn-casino-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(245, 196, 81, 0.16);
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-casino-outline:hover {
+  transform: translateY(-1px);
+  background: rgba(245, 196, 81, 0.06);
+  border-color: rgba(245, 196, 81, 0.28);
+}
+
+/* =========================
+   FORMULÁRIOS
+========================= */
+
+.input-base,
+.select-base {
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(2, 6, 23, 0.7);
+  color: #fff;
+  padding: 0.8rem 1rem;
+  outline: none;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.input-base::placeholder {
+  color: #64748b;
+}
+
+.input-base:focus,
+.select-base:focus {
+  border-color: rgba(245, 196, 81, 0.28);
+  background: rgba(2, 6, 23, 0.85);
+}
+
+/* =========================
+   NÚMEROS
+========================= */
+
+.number-ball {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 196, 81, 0.2);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(245, 196, 81, 0.2), transparent 55%),
+    rgba(255, 255, 255, 0.03);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 6px 18px rgba(0, 0, 0, 0.16);
+}
+
+/* =========================
+   LEGACY OVERRIDE (GREEN → GOLD)
+========================= */
+
+.bg-green-500 {
+  background: #f5c451 !important;
+  color: #0b0f19 !important;
+}
+
+.hover\:bg-green-400:hover {
+  background: #ffd76a !important;
+}
+
+.text-green-400 {
+  color: #f5c451 !important;
+}
+
+.border-green-500 {
+  border-color: rgba(245, 196, 81, 0.4) !important;
+}
+
+.bg-green-500\/10 {
+  background: rgba(245, 196, 81, 0.1) !important;
+}
+
+.border-green-500\/20 {
+  border-color: rgba(245, 196, 81, 0.2) !important;
+}
+
+/* =========================
+   HELPERS
+========================= */
+
+.glow-gold {
+  box-shadow:
+    0 0 0 1px rgba(245, 196, 81, 0.16),
+    0 0 24px rgba(245, 196, 81, 0.12);
+}
+
+.glow-success {
+  box-shadow:
+    0 0 0 1px rgba(34, 197, 94, 0.16),
+    0 0 20px rgba(34, 197, 94, 0.14);
 }

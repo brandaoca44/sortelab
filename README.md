@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SorteLab
 
-## Getting Started
+Aplicação web desenvolvida para consulta de resultados, estatísticas e tendências de jogos e loterias, com foco em experiência do usuário, organização de dados e performance.
 
-First, run the development server:
+## 🚀 Visão do produto
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+O SorteLab foi projetado como uma plataforma centralizada para acesso rápido a informações relevantes, unindo:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Resultados atualizados
+- Organização por bancas
+- Visualização clara de dados
+- Estrutura escalável para novas funcionalidades
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+A proposta é transformar um fluxo de consulta comum em uma experiência mais eficiente e intuitiva.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🖥️ Interface
 
-To learn more about Next.js, take a look at the following resources:
+### Home
+![Home](./screenshots/homepage.png)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Bancas
+![Bancas](./screenshots/bancaspage.png)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Estatísticas
+![Estatísticas](./screenshots/estatisticaspage.png)
 
-## Deploy on Vercel
+### Grupos e Dezenas
+![Grupos](./screenshots/grupospage.png)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Mega-Sena
+![Mega-Sena](./screenshots/megasenapage.png)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Lotofácil
+![Lotofácil](./screenshots/lotofacilpage.png)
+
+### Tendências
+![Tendências](./screenshots/tendenciaspage.png)
+
+---
+
+## ⚙️ Funcionalidades
+
+- Consulta de resultados por banca
+- Visualização de loterias (Mega-Sena e Lotofácil)
+- Sistema de navegação estruturado por categorias
+- Componentização reutilizável
+- Simulador de retorno (calculadora integrada)
+- Interface responsiva
+
+---
+
+## 🧱 Arquitetura
+
+O projeto foi estruturado com foco em separação de responsabilidades:
+
+app/ # rotas e páginas
+components/ # componentes reutilizáveis
+public/ # assets estáticos
+screenshots/ # imagens do projeto
+
+
+Uso de componentização para manter o código escalável e de fácil manutenção.
+
+---
+
+## 🛠️ Tecnologias
+
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+
+---
+
+## 📈 Evolução
+
+O projeto foi desenvolvido com mentalidade de produto, permitindo futuras melhorias como:
+
+- Integração com API em tempo real
+- Sistema de autenticação
+- Personalização de usuário
+- Histórico avançado e análises
+
+---
+
+## 📌 Considerações
+
+Projeto desenvolvido com foco em prática real de desenvolvimento, organização de código e construção de aplicações completas.

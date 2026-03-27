@@ -15,7 +15,23 @@ type BichoPalpite = {
   milhar: string;
 };
 
+// MUDANÇA: chave centralizada em constante (sem alteração de comportamento)
 const STORAGE_KEY = "sortelab_bicho";
+
+// MUDANÇA: validação de estrutura para dados vindos do localStorage
+function isPalpiteValido(obj: unknown): obj is BichoPalpite {
+  if (!obj || typeof obj !== "object") return false;
+  const p = obj as Record<string, unknown>;
+  return (
+    typeof p.id === "string" &&
+    typeof p.grupo === "string" &&
+    typeof p.nome === "string" &&
+    typeof p.imagem === "string" &&
+    typeof p.dezena === "string" &&
+    typeof p.centena === "string" &&
+    typeof p.milhar === "string"
+  );
+}
 
 function gerarPalpite(): BichoPalpite {
   const grupo = grupos[Math.floor(Math.random() * grupos.length)];
@@ -30,7 +46,8 @@ function gerarPalpite(): BichoPalpite {
   const centena = milhar.slice(-3);
 
   return {
-    id: Date.now().toString(),
+    // MUDANÇA: ID com sufixo aleatório para evitar colisão quando gerado rapidamente
+    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     grupo: grupo.grupo,
     nome: grupo.nome,
     imagem: grupo.imagem,
@@ -47,8 +64,22 @@ export function BichoGeneratorCard() {
   useEffect(() => {
     setPalpite(gerarPalpite());
 
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) setHistorico(JSON.parse(saved));
+    // MUDANÇA: try/catch para evitar crash em modo privado, storage cheio
+    // ou quando o usuário manipulou o localStorage manualmente
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // MUDANÇA: validação item a item antes de usar os dados
+          const validos = parsed.filter(isPalpiteValido);
+          setHistorico(validos);
+        }
+      }
+    } catch {
+      // Silencioso — histórico simplesmente começa vazio
+      console.warn("SorteLab: não foi possível carregar histórico salvo.");
+    }
   }, []);
 
   function gerarNovo() {
@@ -60,7 +91,13 @@ export function BichoGeneratorCard() {
 
     const novo = [palpite, ...historico].slice(0, 5);
     setHistorico(novo);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(novo));
+
+    // MUDANÇA: try/catch ao salvar — evita crash silencioso em storage cheio
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(novo));
+    } catch {
+      console.warn("SorteLab: não foi possível salvar no histórico.");
+    }
   }
 
   const texto = useMemo(() => {
@@ -145,7 +182,7 @@ Grupo: ${palpite.grupo} - ${palpite.nome}`;
         </div>
       </div>
 
-      {/* ANIMAL (AGORA MAIS COMPACTO) */}
+      {/* ANIMAL */}
       <div className="card-soft mt-5 flex items-center gap-3 rounded-xl p-3">
         <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-black/30">
           <Image
@@ -163,7 +200,6 @@ Grupo: ${palpite.grupo} - ${palpite.nome}`;
           </p>
         </div>
 
-        {/* CTA PEQUENO */}
         <button
           onClick={abrirInstagram}
           className="flex items-center gap-1 rounded-lg border border-[rgba(245,196,81,0.25)] bg-[rgba(245,196,81,0.08)] px-3 py-1.5 text-xs font-medium text-gold transition hover:bg-[rgba(245,196,81,0.15)]"

@@ -33,12 +33,12 @@ export function Header() {
   }
 
   function abrirWhatsApp() {
-    window.open(
-      "https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=Quero%20receber%20palpites%20do%20SorteLab",
-      "_blank",
-      "noopener,noreferrer"
-    );
-  }
+  window.open(
+    `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=Quero%20receber%20palpites%20do%20SorteLab`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+}
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#040816]/88 backdrop-blur-xl">

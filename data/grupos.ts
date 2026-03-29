@@ -149,4 +149,4 @@ export const grupos = [
     dezenas: ["97", "98", "99", "00"],
     imagem: "/grupos/vaca.png",
   },
-] as const;
+];

@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
+import { kv } from "@vercel/kv";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LoteriaCard } from "@/components/LoteriaCard";
 import { LotteryGeneratorCard } from "@/components/LotteryGeneratorCard";
-import { megaSenaResultados } from "@/data/loterias";
 import { PartnerBetCard } from "@/components/PartnerBetCard";
+import type { ResultadoLoteria } from "@/data/resultados-completos/types";
 
 export const metadata: Metadata = {
   title: "Resultado da Mega-Sena",
   description: "Confira os últimos resultados da Mega-Sena no SorteLab.",
 };
 
-export default function ResultadoMegaSenaPage() {
+export default async function ResultadoMegaSenaPage() {
+  const lista = await kv.get<ResultadoLoteria[]>("loteria:megasena:lista") ?? [];
+
   return (
     <>
       <Header />
@@ -21,11 +24,9 @@ export default function ResultadoMegaSenaPage() {
           <div>
             <section>
               <span className="badge-primary">Loterias</span>
-
               <h1 className="title-premium mt-6 text-4xl font-semibold md:text-5xl">
                 Resultado da Mega-Sena
               </h1>
-
               <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
                 Consulte os concursos mais recentes da Mega-Sena e gere palpites
                 automáticos para novos jogos.
@@ -42,14 +43,20 @@ export default function ResultadoMegaSenaPage() {
             </section>
 
             <section className="mt-10 space-y-5">
-              {megaSenaResultados.map((resultado) => (
-                <LoteriaCard
-                  key={resultado.concurso}
-                  concurso={resultado.concurso}
-                  data={resultado.data}
-                  dezenas={resultado.dezenas}
-                />
-              ))}
+              {lista.length > 0 ? (
+                lista.map((resultado) => (
+                  <LoteriaCard
+                    key={resultado.concurso}
+                    concurso={resultado.concurso}
+                    data={resultado.data}
+                    dezenas={resultado.dezenas}
+                  />
+                ))
+              ) : (
+                <div className="surface-card rounded-2xl p-10 text-center text-muted">
+                  Nenhum resultado disponível ainda.
+                </div>
+              )}
             </section>
           </div>
 

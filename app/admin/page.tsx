@@ -83,11 +83,12 @@ export default function AdminPage() {
     else setPremiosMaluca(lista);
   }
 
-  function atualizarDezena(index: number, valor: string) {
-    const novas = [...dezenas];
-    novas[index] = valor.padStart(2, "0").slice(-2);
-    setDezenas(novas);
-  }
+  // CORRIGIDO
+function atualizarDezena(index: number, valor: string) {
+  const novas = [...dezenas];
+  novas[index] = valor.replace(/\D/g, "").slice(0, 2);
+  setDezenas(novas);
+}
 
   function limparFormulario() {
     setPremiosNormal(Array.from({ length: 10 }, getPremioVazio));

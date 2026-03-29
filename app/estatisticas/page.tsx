@@ -91,7 +91,7 @@ export default function EstatisticasPage() {
                     key={`${bancaAtual.banca}-${horario}`}
                     banca={bancaAtual.banca}
                     horario={horario}
-                    dias={bancaAtual.dias}
+                    dias={Number(bancaAtual.dias) || 7}
                   />
                 ))}
               </div>

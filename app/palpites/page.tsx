@@ -37,7 +37,13 @@ function getDezena(milhar: string) {
   return milhar.slice(-2);
 }
 
-function JogoInfoCard({ milhar, grupo, mensagem }: any) {
+type JogoInfoCardProps = {
+  milhar: string;
+  grupo: string;
+  mensagem: string;
+};
+
+function JogoInfoCard({ milhar, grupo, mensagem }: JogoInfoCardProps) {
   return (
     <div className="surface-card rounded-2xl p-5">
       <div className="grid gap-4 xl:grid-cols-[1fr_280px]">

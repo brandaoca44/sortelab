@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { bancas } from "@/data/bancas";
 
 type Aba = "adicionar" | "excluir";
 type Tipo = "bicho" | "loteria";
 type NomeLoteria = "megasena" | "lotofacil";
+
+type ResultadoBicho = { chave: string; banca: string; data: string; horario: string };
+type ResultadoLoteria = { nome: string; concurso: string; data: string };
 
 const BICHOS = [
   { grupo: "01", nome: "Avestruz" }, { grupo: "02", nome: "Águia" },
@@ -22,6 +25,10 @@ const BICHOS = [
   { grupo: "23", nome: "Urso" }, { grupo: "24", nome: "Veado" },
   { grupo: "25", nome: "Vaca" },
 ];
+
+const NOMES_BANCAS: Record<string, string> = Object.fromEntries(
+  bancas.map((b) => [b.slug, b.nome])
+);
 
 function getPremioVazio() {
   return { grupo: "", bicho: "", milhar: "" };
@@ -48,12 +55,8 @@ export default function AdminPage() {
   const [banca, setBanca] = useState(bancas[0].slug);
   const [data, setData] = useState(getHojeBrasil());
   const [horario, setHorario] = useState("10:00");
-  const [premiosNormal, setPremiosNormal] = useState(
-    Array.from({ length: 10 }, getPremioVazio)
-  );
-  const [premiosMaluca, setPremiosMaluca] = useState(
-    Array.from({ length: 10 }, getPremioVazio)
-  );
+  const [premiosNormal, setPremiosNormal] = useState(Array.from({ length: 10 }, getPremioVazio));
+  const [premiosMaluca, setPremiosMaluca] = useState(Array.from({ length: 10 }, getPremioVazio));
   const [nomeLoteria, setNomeLoteria] = useState<NomeLoteria>("megasena");
   const [concurso, setConcurso] = useState("");
   const [dataLoteria, setDataLoteria] = useState(getHojeBrasil());
@@ -64,28 +67,43 @@ export default function AdminPage() {
 
   // --- EXCLUIR ---
   const [excTipo, setExcTipo] = useState<Tipo>("bicho");
-  const [excBanca, setExcBanca] = useState(bancas[0].slug);
-  const [excData, setExcData] = useState(getHojeBrasil());
-  const [excHorario, setExcHorario] = useState("10:00");
-  const [excNomeLoteria, setExcNomeLoteria] = useState<NomeLoteria>("megasena");
-  const [excConcurso, setExcConcurso] = useState("");
+  const [resultadosBicho, setResultadosBicho] = useState<ResultadoBicho[]>([]);
+  const [resultadosLoteria, setResultadosLoteria] = useState<ResultadoLoteria[]>([]);
+  const [carregandoLista, setCarregandoLista] = useState(false);
+  const [selecionado, setSelecionado] = useState<string | null>(null);
   const [excluindo, setExcluindo] = useState(false);
   const [mensagemExc, setMensagemExc] = useState("");
   const [erroExc, setErroExc] = useState("");
-  const [confirmando, setConfirmando] = useState(false);
 
   const bancaAtual = bancas.find((b) => b.slug === banca);
   const horariosDaBanca = bancaAtual?.horarios || [];
 
-  const bancaExcAtual = bancas.find((b) => b.slug === excBanca);
-  const horariosExcBanca = bancaExcAtual?.horarios || [];
+  const carregarLista = useCallback(async () => {
+    setCarregandoLista(true);
+    setSelecionado(null);
+    setMensagemExc("");
+    setErroExc("");
+    try {
+      const res = await fetch("/api/admin/listar");
+      const json = await res.json();
+      if (json.sucesso) {
+        setResultadosBicho(json.bicho || []);
+        setResultadosLoteria(json.loteria || []);
+      }
+    } catch {
+      setErroExc("Erro ao carregar lista.");
+    } finally {
+      setCarregandoLista(false);
+    }
+  }, []);
 
-  function atualizarPremio(
-    modalidade: "normal" | "maluca",
-    index: number,
-    campo: "grupo" | "milhar",
-    valor: string
-  ) {
+  useEffect(() => {
+    if (aba === "excluir" && autenticado) {
+      carregarLista();
+    }
+  }, [aba, autenticado, carregarLista]);
+
+  function atualizarPremio(modalidade: "normal" | "maluca", index: number, campo: "grupo" | "milhar", valor: string) {
     const lista = modalidade === "normal" ? [...premiosNormal] : [...premiosMaluca];
     const grupoEncontrado = BICHOS.find((b) => b.grupo === valor);
     lista[index] = {
@@ -110,24 +128,13 @@ export default function AdminPage() {
     setConcurso("");
   }
 
-  function limparFeedback() {
-    setMensagem("");
-    setErro("");
-    setMensagemExc("");
-    setErroExc("");
-    setConfirmando(false);
-  }
-
   async function verificarSenha() {
     const res = await fetch("/api/admin/resultado", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ senha, tipo: "ping", dados: {} }),
     });
-    if (res.status === 401) {
-      setErroSenha("Senha incorreta.");
-      return;
-    }
+    if (res.status === 401) { setErroSenha("Senha incorreta."); return; }
     setAutenticado(true);
     setErroSenha("");
   }
@@ -140,8 +147,7 @@ export default function AdminPage() {
       let body = {};
       if (tipo === "bicho") {
         body = {
-          senha,
-          tipo: "bicho",
+          senha, tipo: "bicho",
           dados: {
             banca, data, horario,
             normal: premiosNormal.map((p, i) => ({ premio: i + 1, ...p })),
@@ -149,11 +155,7 @@ export default function AdminPage() {
           },
         };
       } else {
-        body = {
-          senha,
-          tipo: "loteria",
-          dados: { nome: nomeLoteria, concurso, data: dataLoteria, dezenas },
-        };
+        body = { senha, tipo: "loteria", dados: { nome: nomeLoteria, concurso, data: dataLoteria, dezenas } };
       }
       const res = await fetch("/api/admin/resultado", {
         method: "POST",
@@ -171,14 +173,21 @@ export default function AdminPage() {
   }
 
   async function excluir() {
+    if (!selecionado) return;
     setExcluindo(true);
     setMensagemExc("");
     setErroExc("");
-    setConfirmando(false);
+
     try {
-      const body = excTipo === "bicho"
-        ? { senha, tipo: "excluir-bicho", dados: { banca: excBanca, data: excData, horario: excHorario } }
-        : { senha, tipo: "excluir-loteria", dados: { nome: excNomeLoteria, concurso: excConcurso } };
+      let body = {};
+      if (excTipo === "bicho") {
+        const item = resultadosBicho.find((r) => r.chave === selecionado);
+        if (!item) return;
+        body = { senha, tipo: "excluir-bicho", dados: { banca: item.banca, data: item.data, horario: item.horario } };
+      } else {
+        const [nome, conc] = selecionado.split("|");
+        body = { senha, tipo: "excluir-loteria", dados: { nome, concurso: conc } };
+      }
 
       const res = await fetch("/api/admin/resultado", {
         method: "POST",
@@ -187,7 +196,11 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (!res.ok) setErroExc(json.erro || "Erro ao excluir.");
-      else setMensagemExc("Resultado excluído com sucesso!");
+      else {
+        setMensagemExc("Resultado excluído com sucesso!");
+        setSelecionado(null);
+        await carregarLista();
+      }
     } catch {
       setErroExc("Erro de conexão. Tente novamente.");
     } finally {
@@ -224,36 +237,25 @@ export default function AdminPage() {
     <div className="min-h-screen bg-[#0c1425] px-4 py-10">
       <div className="mx-auto max-w-4xl">
 
-        {/* HEADER */}
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="title-premium text-3xl font-semibold">Painel Admin</h1>
             <p className="mt-1 text-sm text-muted">Gerencie os resultados do site.</p>
           </div>
-          <button onClick={() => setAutenticado(false)} className="btn-ghost text-sm">
-            Sair
-          </button>
+          <button onClick={() => setAutenticado(false)} className="btn-ghost text-sm">Sair</button>
         </div>
 
         {/* ABAS PRINCIPAIS */}
         <div className="mb-6 flex gap-3">
           <button
-            onClick={() => { setAba("adicionar"); limparFeedback(); }}
-            className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${
-              aba === "adicionar"
-                ? "border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.15)] text-gold"
-                : "border border-white/10 bg-white/[0.03] text-slate-300"
-            }`}
+            onClick={() => { setAba("adicionar"); setMensagem(""); setErro(""); }}
+            className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${aba === "adicionar" ? "border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.15)] text-gold" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}
           >
             Adicionar resultado
           </button>
           <button
-            onClick={() => { setAba("excluir"); limparFeedback(); }}
-            className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${
-              aba === "excluir"
-                ? "border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400"
-                : "border border-white/10 bg-white/[0.03] text-slate-300"
-            }`}
+            onClick={() => { setAba("excluir"); }}
+            className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${aba === "excluir" ? "border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}
           >
             Excluir resultado
           </button>
@@ -264,15 +266,8 @@ export default function AdminPage() {
           <>
             <div className="mb-6 flex gap-3">
               {(["bicho", "loteria"] as Tipo[]).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTipo(t)}
-                  className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${
-                    tipo === t
-                      ? "border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.15)] text-gold"
-                      : "border border-white/10 bg-white/[0.03] text-slate-300"
-                  }`}
-                >
+                <button key={t} onClick={() => setTipo(t)}
+                  className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${tipo === t ? "border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.15)] text-gold" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}>
                   {t === "bicho" ? "Jogo do Bicho" : "Loteria"}
                 </button>
               ))}
@@ -283,18 +278,8 @@ export default function AdminPage() {
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
                     <label className="mb-2 block text-xs font-medium text-muted">Banca</label>
-                    <select
-                      value={banca}
-                      onChange={(e) => {
-                        setBanca(e.target.value);
-                        const nova = bancas.find((b) => b.slug === e.target.value);
-                        if (nova) setHorario(nova.horarios[0]);
-                      }}
-                      className="select-base"
-                    >
-                      {bancas.map((b) => (
-                        <option key={b.slug} value={b.slug}>{b.nome}</option>
-                      ))}
+                    <select value={banca} onChange={(e) => { setBanca(e.target.value); const nova = bancas.find((b) => b.slug === e.target.value); if (nova) setHorario(nova.horarios[0]); }} className="select-base">
+                      {bancas.map((b) => <option key={b.slug} value={b.slug}>{b.nome}</option>)}
                     </select>
                   </div>
                   <div>
@@ -304,43 +289,25 @@ export default function AdminPage() {
                   <div>
                     <label className="mb-2 block text-xs font-medium text-muted">Horário</label>
                     <select value={horario} onChange={(e) => setHorario(e.target.value)} className="select-base">
-                      {horariosDaBanca.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
+                      {horariosDaBanca.map((h) => <option key={h} value={h}>{h}</option>)}
                     </select>
                   </div>
                 </div>
-
                 {(["normal", "maluca"] as const).map((modalidade) => {
                   const premios = modalidade === "normal" ? premiosNormal : premiosMaluca;
                   return (
                     <div key={modalidade} className="mt-8">
-                      <h2 className="mb-4 text-lg font-semibold capitalize text-white">
-                        {modalidade === "normal" ? "Normal" : "Maluca"}
-                      </h2>
+                      <h2 className="mb-4 text-lg font-semibold capitalize text-white">{modalidade === "normal" ? "Normal" : "Maluca"}</h2>
                       <div className="grid gap-3">
                         {premios.map((premio, index) => (
                           <div key={index} className="grid grid-cols-[40px_1fr_1fr_1fr] items-center gap-3">
                             <span className="text-center text-sm font-semibold text-gold">{index + 1}º</span>
-                            <select
-                              value={premio.grupo}
-                              onChange={(e) => atualizarPremio(modalidade, index, "grupo", e.target.value)}
-                              className="select-base text-sm"
-                            >
+                            <select value={premio.grupo} onChange={(e) => atualizarPremio(modalidade, index, "grupo", e.target.value)} className="select-base text-sm">
                               <option value="">Grupo</option>
-                              {BICHOS.map((b) => (
-                                <option key={b.grupo} value={b.grupo}>{b.grupo} - {b.nome}</option>
-                              ))}
+                              {BICHOS.map((b) => <option key={b.grupo} value={b.grupo}>{b.grupo} - {b.nome}</option>)}
                             </select>
                             <input type="text" value={premio.bicho} readOnly placeholder="Bicho" className="input-base text-sm opacity-60" />
-                            <input
-                              type="text"
-                              value={premio.milhar}
-                              onChange={(e) => atualizarPremio(modalidade, index, "milhar", e.target.value)}
-                              placeholder="Milhar"
-                              maxLength={4}
-                              className="input-base text-sm"
-                            />
+                            <input type="text" value={premio.milhar} onChange={(e) => atualizarPremio(modalidade, index, "milhar", e.target.value)} placeholder="Milhar" maxLength={4} className="input-base text-sm" />
                           </div>
                         ))}
                       </div>
@@ -355,14 +322,7 @@ export default function AdminPage() {
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div>
                     <label className="mb-2 block text-xs font-medium text-muted">Loteria</label>
-                    <select
-                      value={nomeLoteria}
-                      onChange={(e) => {
-                        setNomeLoteria(e.target.value as NomeLoteria);
-                        setDezenas(Array(e.target.value === "megasena" ? 6 : 15).fill(""));
-                      }}
-                      className="select-base"
-                    >
+                    <select value={nomeLoteria} onChange={(e) => { setNomeLoteria(e.target.value as NomeLoteria); setDezenas(Array(e.target.value === "megasena" ? 6 : 15).fill("")); }} className="select-base">
                       <option value="megasena">Mega-Sena</option>
                       <option value="lotofacil">Lotofácil</option>
                     </select>
@@ -380,32 +340,15 @@ export default function AdminPage() {
                   <h2 className="mb-4 text-lg font-semibold text-white">Dezenas sorteadas</h2>
                   <div className="flex flex-wrap gap-3">
                     {dezenas.map((dezena, index) => (
-                      <input
-                        key={index}
-                        type="text"
-                        value={dezena}
-                        onChange={(e) => atualizarDezena(index, e.target.value)}
-                        placeholder="00"
-                        maxLength={2}
-                        className="input-base w-16 text-center text-lg font-semibold"
-                      />
+                      <input key={index} type="text" value={dezena} onChange={(e) => atualizarDezena(index, e.target.value)} placeholder="00" maxLength={2} className="input-base w-16 text-center text-lg font-semibold" />
                     ))}
                   </div>
                 </div>
               </div>
             )}
 
-            {mensagem && (
-              <div className="mt-4 rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.1)] px-4 py-3 text-sm text-green-400">
-                {mensagem}
-              </div>
-            )}
-            {erro && (
-              <div className="mt-4 rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] px-4 py-3 text-sm text-red-400">
-                {erro}
-              </div>
-            )}
-
+            {mensagem && <div className="mt-4 rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.1)] px-4 py-3 text-sm text-green-400">{mensagem}</div>}
+            {erro && <div className="mt-4 rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] px-4 py-3 text-sm text-red-400">{erro}</div>}
             <button onClick={salvar} disabled={salvando} className="btn-primary mt-6 w-full">
               {salvando ? "Salvando..." : "Salvar resultado"}
             </button>
@@ -415,112 +358,114 @@ export default function AdminPage() {
         {/* ======================== ABA EXCLUIR ======================== */}
         {aba === "excluir" && (
           <>
-            <div className="mb-6 flex gap-3">
-              {(["bicho", "loteria"] as Tipo[]).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setExcTipo(t)}
-                  className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${
-                    excTipo === t
-                      ? "border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400"
-                      : "border border-white/10 bg-white/[0.03] text-slate-300"
-                  }`}
-                >
-                  {t === "bicho" ? "Jogo do Bicho" : "Loteria"}
-                </button>
-              ))}
-            </div>
-
-            <div className="surface-card-strong rounded-3xl p-6 md:p-8">
-              {excTipo === "bicho" && (
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-muted">Banca</label>
-                    <select
-                      value={excBanca}
-                      onChange={(e) => {
-                        setExcBanca(e.target.value);
-                        const nova = bancas.find((b) => b.slug === e.target.value);
-                        if (nova) setExcHorario(nova.horarios[0]);
-                      }}
-                      className="select-base"
-                    >
-                      {bancas.map((b) => (
-                        <option key={b.slug} value={b.slug}>{b.nome}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-muted">Data</label>
-                    <input type="date" value={excData} onChange={(e) => setExcData(e.target.value)} className="input-base" />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-muted">Horário</label>
-                    <select value={excHorario} onChange={(e) => setExcHorario(e.target.value)} className="select-base">
-                      {horariosExcBanca.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {excTipo === "loteria" && (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-muted">Loteria</label>
-                    <select value={excNomeLoteria} onChange={(e) => setExcNomeLoteria(e.target.value as NomeLoteria)} className="select-base">
-                      <option value="megasena">Mega-Sena</option>
-                      <option value="lotofacil">Lotofácil</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-xs font-medium text-muted">Número do concurso</label>
-                    <input type="text" value={excConcurso} onChange={(e) => setExcConcurso(e.target.value)} placeholder="Ex: 2822" className="input-base" />
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-6 rounded-xl border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.06)] px-4 py-3 text-sm text-red-400">
-                ⚠️ Esta ação remove o resultado permanentemente do banco de dados.
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex gap-3">
+                {(["bicho", "loteria"] as Tipo[]).map((t) => (
+                  <button key={t} onClick={() => { setExcTipo(t); setSelecionado(null); }}
+                    className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${excTipo === t ? "border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}>
+                    {t === "bicho" ? "Jogo do Bicho" : "Loteria"}
+                  </button>
+                ))}
               </div>
-            </div>
-
-            {mensagemExc && (
-              <div className="mt-4 rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.1)] px-4 py-3 text-sm text-green-400">
-                {mensagemExc}
-              </div>
-            )}
-            {erroExc && (
-              <div className="mt-4 rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] px-4 py-3 text-sm text-red-400">
-                {erroExc}
-              </div>
-            )}
-
-            {!confirmando ? (
-              <button
-                onClick={() => setConfirmando(true)}
-                disabled={excluindo}
-                className="mt-6 w-full rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] py-3 text-sm font-semibold text-red-400 transition hover:bg-[rgba(239,68,68,0.18)]"
-              >
-                Excluir resultado
+              <button onClick={carregarLista} disabled={carregandoLista} className="btn-ghost text-xs">
+                {carregandoLista ? "Carregando..." : "↻ Atualizar"}
               </button>
-            ) : (
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <button
-                  onClick={() => setConfirmando(false)}
-                  className="btn-ghost w-full"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={excluir}
-                  disabled={excluindo}
-                  className="w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
-                >
-                  {excluindo ? "Excluindo..." : "Confirmar exclusão"}
-                </button>
+            </div>
+
+            {/* LISTA DE RESULTADOS DO BICHO */}
+            {excTipo === "bicho" && (
+              <div className="surface-card-strong rounded-3xl p-6">
+                <p className="mb-4 text-sm font-medium text-muted">
+                  Resultados de hoje — clique para selecionar e excluir
+                </p>
+                {carregandoLista ? (
+                  <p className="text-sm text-muted">Carregando...</p>
+                ) : resultadosBicho.length === 0 ? (
+                  <p className="text-sm text-muted">Nenhum resultado salvo hoje.</p>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {resultadosBicho.map((item) => {
+                      const sel = selecionado === item.chave;
+                      return (
+                        <button
+                          key={item.chave}
+                          onClick={() => setSelecionado(sel ? null : item.chave)}
+                          className={`rounded-xl border p-4 text-left transition ${
+                            sel
+                              ? "border-red-500 bg-[rgba(239,68,68,0.12)]"
+                              : "border-white/10 bg-white/[0.03] hover:border-white/20"
+                          }`}
+                        >
+                          <p className="text-sm font-semibold text-white">
+                            {NOMES_BANCAS[item.banca] || item.banca}
+                          </p>
+                          <p className="mt-1 text-xs text-muted">{item.horario}</p>
+                          {sel && (
+                            <p className="mt-2 text-xs font-semibold text-red-400">
+                              Selecionado para excluir
+                            </p>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+            )}
+
+            {/* LISTA DE RESULTADOS DE LOTERIA */}
+            {excTipo === "loteria" && (
+              <div className="surface-card-strong rounded-3xl p-6">
+                <p className="mb-4 text-sm font-medium text-muted">
+                  Concursos salvos — clique para selecionar e excluir
+                </p>
+                {carregandoLista ? (
+                  <p className="text-sm text-muted">Carregando...</p>
+                ) : resultadosLoteria.length === 0 ? (
+                  <p className="text-sm text-muted">Nenhum concurso salvo.</p>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {resultadosLoteria.map((item) => {
+                      const chave = `${item.nome}|${item.concurso}`;
+                      const sel = selecionado === chave;
+                      return (
+                        <button
+                          key={chave}
+                          onClick={() => setSelecionado(sel ? null : chave)}
+                          className={`rounded-xl border p-4 text-left transition ${
+                            sel
+                              ? "border-red-500 bg-[rgba(239,68,68,0.12)]"
+                              : "border-white/10 bg-white/[0.03] hover:border-white/20"
+                          }`}
+                        >
+                          <p className="text-sm font-semibold text-white capitalize">
+                            {item.nome === "megasena" ? "Mega-Sena" : "Lotofácil"}
+                          </p>
+                          <p className="mt-1 text-xs text-muted">Concurso {item.concurso} • {item.data}</p>
+                          {sel && (
+                            <p className="mt-2 text-xs font-semibold text-red-400">
+                              Selecionado para excluir
+                            </p>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {mensagemExc && <div className="mt-4 rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.1)] px-4 py-3 text-sm text-green-400">{mensagemExc}</div>}
+            {erroExc && <div className="mt-4 rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] px-4 py-3 text-sm text-red-400">{erroExc}</div>}
+
+            {selecionado && (
+              <button
+                onClick={excluir}
+                disabled={excluindo}
+                className="mt-6 w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+              >
+                {excluindo ? "Excluindo..." : "Confirmar exclusão"}
+              </button>
             )}
           </>
         )}

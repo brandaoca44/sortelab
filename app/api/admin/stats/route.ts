@@ -138,9 +138,29 @@ export async function GET(req: NextRequest) {
       const dezenaFrequente = dezenasSorted[0]?.[0] || "—";
 
       // Dezena mais atrasada
-      const dezenaAtrasada = todasDezenas
-        .filter((d) => !stats.dezenas[d])[0] || dezenasSorted[dezenasSorted.length - 1]?.[0] || "—";
+      // Mapa de grupos → dezenas
+const gruposDezenas: Record<string, string[]> = {
+  "01": ["01","02","03","04"], "02": ["05","06","07","08"],
+  "03": ["09","10","11","12"], "04": ["13","14","15","16"],
+  "05": ["17","18","19","20"], "06": ["21","22","23","24"],
+  "07": ["25","26","27","28"], "08": ["29","30","31","32"],
+  "09": ["33","34","35","36"], "10": ["37","38","39","40"],
+  "11": ["41","42","43","44"], "12": ["45","46","47","48"],
+  "13": ["49","50","51","52"], "14": ["53","54","55","56"],
+  "15": ["57","58","59","60"], "16": ["61","62","63","64"],
+  "17": ["65","66","67","68"], "18": ["69","70","71","72"],
+  "19": ["73","74","75","76"], "20": ["77","78","79","80"],
+  "21": ["81","82","83","84"], "22": ["85","86","87","88"],
+  "23": ["89","90","91","92"], "24": ["93","94","95","96"],
+  "25": ["97","98","99","00"],
+};
 
+// Dezena atrasada — busca dentro das dezenas do grupo atrasado
+const grupoAtrasadoNum = grupoAtrasado.split(" - ")[0];
+const dezenasDoGrupoAtrasado = gruposDezenas[grupoAtrasadoNum] || todasDezenas;
+const dezenaAtrasada = dezenasDoGrupoAtrasado
+  .filter((d) => !stats.dezenas[d])[0]
+  || dezenasDoGrupoAtrasado[0];
       resultado[horario] = {
         grupoFrequente,
         grupoAtrasado,

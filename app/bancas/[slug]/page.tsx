@@ -6,33 +6,38 @@ import { ResultadoCompletoTabela } from "@/components/ResultadoCompletoTabela";
 import { bancas } from "@/data/bancas";
 import type { ResultadoModalidade } from "@/data/resultados-completos/types";
 
+function getUltimasDatasBrasil(quantidade: number): string[] {
+  const datas: string[] = [];
+  // Usa fuso de Brasília (UTC-3) para calcular a data correta
+  const agora = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+  );
+  for (let i = 0; i < quantidade; i++) {
+    const d = new Date(agora);
+    d.setDate(agora.getDate() - i);
+    const ano = d.getFullYear();
+    const mes = String(d.getMonth() + 1).padStart(2, "0");
+    const dia = String(d.getDate()).padStart(2, "0");
+    datas.push(`${ano}-${mes}-${dia}`);
+  }
+  return datas;
+}
+
 function formatarDataLabel(data: string, index: number) {
   if (index === 0) return "Hoje";
-  const date = new Date(data);
+  const [ano, mes, dia] = data.split("-").map(Number);
+  const date = new Date(ano, mes - 1, dia);
   const dias = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-  const diaSemana = dias[date.getDay()];
-  const dia = date.getDate().toString().padStart(2, "0");
-  return `${diaSemana} ${dia}`;
+  return `${dias[date.getDay()]} ${String(dia).padStart(2, "0")}`;
 }
 
 function formatarDataCompleta(data: string) {
-  const date = new Date(data);
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  const [ano, mes, dia] = data.split("-").map(Number);
+  return `${String(dia).padStart(2, "0")}/${String(mes).padStart(2, "0")}`;
 }
 
 function formatarHorario(horario: string) {
   return horario.replace(":00", "h");
-}
-
-function getUltimasDatas(quantidade: number): string[] {
-  const datas: string[] = [];
-  const hoje = new Date();
-  for (let i = 0; i < quantidade; i++) {
-    const d = new Date(hoje);
-    d.setDate(hoje.getDate() - i);
-    datas.push(d.toISOString().split("T")[0]);
-  }
-  return datas;
 }
 
 type PageProps = {
@@ -50,7 +55,7 @@ export default async function BancaPage({ params, searchParams }: PageProps) {
     return <div className="p-10 text-white">Banca não encontrada</div>;
   }
 
-  const datasDisponiveis = getUltimasDatas(7);
+  const datasDisponiveis = getUltimasDatasBrasil(7);
   const dataAtual = data && datasDisponiveis.includes(data) ? data : datasDisponiveis[0];
   const horariosDisponiveis = bancaInfo.horarios;
   const horarioAtual = horario && horariosDisponiveis.includes(horario) ? horario : horariosDisponiveis[0];

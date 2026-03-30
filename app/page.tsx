@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { LoteriaCard } from "@/components/LoteriaCard";
-import { megaSenaResultados, lotofacilResultados } from "@/data/loterias";
+
+const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
 const atalhos = [
   {
@@ -59,11 +59,33 @@ const bancasDestaque = [
   },
 ];
 
-function AdBlock({ label = "Anúncio" }: { label?: string }) {
+function AdBlock() {
   return (
-    <div className="surface-card rounded-2xl px-4 py-5 text-center text-sm text-slate-500">
-      {label}
-    </div>
+    <a
+      href={`https://wa.me/${WHATSAPP}?text=Quero%20anunciar%20no%20SorteLab`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block w-full"
+    >
+      <div className="flex items-center justify-between gap-4 rounded-2xl border border-dashed border-[rgba(245,196,81,0.25)] bg-[rgba(245,196,81,0.04)] px-6 py-5 transition hover:border-[rgba(245,196,81,0.45)] hover:bg-[rgba(245,196,81,0.07)]">
+        <div className="flex items-center gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.1)]">
+            <span className="text-base text-[#f5c451]">★</span>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-[#f5c451]">
+              Anuncie aqui
+            </p>
+            <p className="text-xs text-slate-400">
+              Alcance milhares de jogadores diariamente
+            </p>
+          </div>
+        </div>
+        <div className="hidden rounded-xl border border-[rgba(245,196,81,0.2)] bg-[rgba(245,196,81,0.08)] px-4 py-2 sm:block">
+          <p className="text-xs font-semibold text-[#f5c451]">Fale conosco</p>
+        </div>
+      </div>
+    </a>
   );
 }
 
@@ -88,7 +110,6 @@ function SectionHeader({
           {description}
         </p>
       </div>
-
       {href && cta ? (
         <Link href={href} className="btn-secondary">
           {cta}
@@ -120,101 +141,90 @@ export default function Home() {
 
       <main className="py-16">
         <section className="border-b border-white/10">
-  <div className="container py-10 md:py-12">
-    <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+          <div className="container py-10 md:py-12">
+            <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+              <div className="max-w-2xl">
+                <span className="badge-primary">
+                  Plataforma inteligente de resultados e tendências
+                </span>
+                <h1 className="title-premium mt-4 text-3xl font-semibold leading-tight md:text-4xl">
+                  Resultados, estatísticas e palpites em um só lugar
+                </h1>
+                <p className="mt-3 text-sm text-muted md:text-base">
+                  Consulte bancas, acompanhe loterias e visualize tendências de
+                  forma rápida e direta.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link href="/bancas" className="btn-primary px-5 py-2.5 text-sm">
+                    Ver bancas
+                  </Link>
+                  <Link href="/resultado-mega-sena" className="btn-secondary px-5 py-2.5 text-sm">
+                    Mega-Sena
+                  </Link>
+                  <Link href="/resultado-lotofacil" className="btn-secondary px-5 py-2.5 text-sm">
+                    Lotofácil
+                  </Link>
+                </div>
+              </div>
 
-      {/* TEXTO */}
-      <div className="max-w-2xl">
-        <span className="badge-primary">
-          Plataforma inteligente de resultados e tendências
-        </span>
-
-        <h1 className="title-premium mt-4 text-3xl md:text-4xl font-semibold leading-tight">
-          Resultados, estatísticas e palpites em um só lugar
-        </h1>
-
-        <p className="mt-3 text-sm md:text-base text-muted">
-          Consulte bancas, acompanhe loterias e visualize tendências de forma rápida e direta.
-        </p>
-
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link href="/bancas" className="btn-primary px-5 py-2.5 text-sm">
-            Ver bancas
-          </Link>
-
-          <Link href="/resultado-mega-sena" className="btn-secondary px-5 py-2.5 text-sm">
-            Mega-Sena
-          </Link>
-
-          <Link href="/resultado-lotofacil" className="btn-secondary px-5 py-2.5 text-sm">
-            Lotofácil
-          </Link>
-        </div>
-      </div>
-
-      {/* CALCULADORA */}
-      <div className="surface-card-strong rounded-2xl p-4 md:p-5">
-        <p className="text-xs text-muted">Calculadora rápida</p>
-
-        <h3 className="mt-1 text-lg font-semibold text-white">
-          Simule retorno
-        </h3>
-
-        <div className="mt-3 grid gap-3">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {(["milhar", "centena", "dezena", "grupo"] as const).map(
-              (tipo) => {
-                const ativo = tipoPremio === tipo;
-
-                return (
-                  <button
-                    key={tipo}
-                    onClick={() => setTipoPremio(tipo)}
-                    className={`rounded-lg px-2 py-1.5 text-xs capitalize transition ${
-                      ativo
-                        ? "bg-[rgba(245,196,81,0.15)] text-[#f5c451]"
-                        : "bg-white/[0.03] text-slate-300 hover:bg-white/[0.06]"
-                    }`}
-                  >
-                    {tipo}
-                  </button>
-                );
-              }
-            )}
-          </div>
-
-          <input
-            type="number"
-            value={valorAposta}
-            onChange={(e) => setValorAposta(e.target.value)}
-            className="input-base text-sm py-2"
-          />
-
-          <div className="grid grid-cols-2 gap-2">
-            <div className="surface-soft rounded-xl p-3">
-              <p className="text-xs text-muted">Multiplicador</p>
-              <strong className="text-lg text-gold">
-                {multiplicadores[tipoPremio]}x
-              </strong>
-            </div>
-
-            <div className="surface-soft rounded-xl p-3">
-              <p className="text-xs text-muted">Retorno</p>
-              <strong className="text-lg text-gold">
-                R$ {retornoEstimado.toLocaleString("pt-BR")}
-              </strong>
+              <div className="surface-card-strong rounded-2xl p-4 md:p-5">
+                <p className="text-xs text-muted">Calculadora rápida</p>
+                <h3 className="mt-1 text-lg font-semibold text-white">
+                  Simule retorno
+                </h3>
+                <div className="mt-3 grid gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {(["milhar", "centena", "dezena", "grupo"] as const).map(
+                      (tipo) => {
+                        const ativo = tipoPremio === tipo;
+                        return (
+                          <button
+                            key={tipo}
+                            onClick={() => setTipoPremio(tipo)}
+                            className={`rounded-lg px-2 py-1.5 text-xs capitalize transition ${
+                              ativo
+                                ? "bg-[rgba(245,196,81,0.15)] text-[#f5c451]"
+                                : "bg-white/[0.03] text-slate-300 hover:bg-white/[0.06]"
+                            }`}
+                          >
+                            {tipo}
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
+                  <input
+                    type="number"
+                    value={valorAposta}
+                    onChange={(e) => {
+                      const val = Math.min(Math.max(Number(e.target.value), 0), 10000);
+                      setValorAposta(String(val));
+                    }}
+                    className="input-base py-2 text-sm"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="surface-soft rounded-xl p-3">
+                      <p className="text-xs text-muted">Multiplicador</p>
+                      <strong className="text-lg text-gold">
+                        {multiplicadores[tipoPremio]}x
+                      </strong>
+                    </div>
+                    <div className="surface-soft rounded-xl p-3">
+                      <p className="text-xs text-muted">Retorno</p>
+                      <strong className="text-lg text-gold">
+                        R$ {retornoEstimado.toLocaleString("pt-BR")}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
+        </section>
 
         <section className="py-6">
           <div className="container">
-            <AdBlock label="Anúncio horizontal" />
+            <AdBlock />
           </div>
         </section>
 
@@ -224,7 +234,6 @@ export default function Home() {
               title="Acesso rápido"
               description="As principais áreas da plataforma organizadas para uma navegação mais simples e objetiva."
             />
-
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
               {atalhos.map((item) => (
                 <Link
@@ -233,20 +242,15 @@ export default function Home() {
                   className="surface-card group rounded-2xl p-6 transition duration-200 hover:-translate-y-1"
                 >
                   <span className="badge-primary text-xs">{item.tag}</span>
-
                   <h3 className="mt-4 text-lg font-semibold text-white transition group-hover:text-gold">
                     {item.titulo}
                   </h3>
-
                   <p className="mt-3 text-sm leading-6 text-muted">
                     {item.descricao}
                   </p>
-
                   <span className="mt-6 inline-flex items-center text-sm font-medium text-slate-300 transition group-hover:text-white">
                     Acessar
-                    <span className="ml-2 transition group-hover:translate-x-1">
-                      →
-                    </span>
+                    <span className="ml-2 transition group-hover:translate-x-1">→</span>
                   </span>
                 </Link>
               ))}
@@ -256,7 +260,7 @@ export default function Home() {
 
         <section className="py-4">
           <div className="container">
-            <AdBlock label="Anúncio entre seções" />
+            <AdBlock />
           </div>
         </section>
 
@@ -268,7 +272,6 @@ export default function Home() {
               href="/bancas"
               cta="Ver todas as bancas"
             />
-
             <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
               {bancasDestaque.map((banca) => (
                 <Link
@@ -284,7 +287,6 @@ export default function Home() {
                       →
                     </span>
                   </div>
-
                   <p className="mt-3 text-sm leading-6 text-muted">
                     {banca.descricao}
                   </p>
@@ -296,7 +298,7 @@ export default function Home() {
 
         <section className="py-6">
           <div className="container">
-            <AdBlock label="Anúncio entre bancas e loterias" />
+            <AdBlock />
           </div>
         </section>
 
@@ -308,17 +310,9 @@ export default function Home() {
               href="/resultado-mega-sena"
               cta="Ver Mega-Sena completa"
             />
-
-            <div className="space-y-5">
-              {megaSenaResultados.slice(0, 2).map((resultado) => (
-                <LoteriaCard
-                  key={resultado.concurso}
-                  concurso={resultado.concurso}
-                  data={resultado.data}
-                  dezenas={resultado.dezenas}
-                />
-              ))}
-            </div>
+            <p className="text-sm text-muted">
+              Acesse a página completa para ver os resultados mais recentes.
+            </p>
           </div>
         </section>
 
@@ -330,23 +324,15 @@ export default function Home() {
               href="/resultado-lotofacil"
               cta="Ver Lotofácil completa"
             />
-
-            <div className="space-y-5">
-              {lotofacilResultados.slice(0, 2).map((resultado) => (
-                <LoteriaCard
-                  key={resultado.concurso}
-                  concurso={resultado.concurso}
-                  data={resultado.data}
-                  dezenas={resultado.dezenas}
-                />
-              ))}
-            </div>
+            <p className="text-sm text-muted">
+              Acesse a página completa para ver os resultados mais recentes.
+            </p>
           </div>
         </section>
 
-                <section className="py-6">
+        <section className="py-6">
           <div className="container">
-            <AdBlock label="Anúncio antes do CTA final" />
+            <AdBlock />
           </div>
         </section>
 
@@ -356,24 +342,19 @@ export default function Home() {
               <div className="grid gap-8 md:grid-cols-2 md:items-center">
                 <div>
                   <span className="badge-primary">SorteLab</span>
-
                   <h2 className="title-premium mt-4 text-3xl font-semibold">
-                    Uma plataforma feita para consulta rápida e evolução
-                    contínua
+                    Uma plataforma feita para consulta rápida e evolução contínua
                   </h2>
-
                   <p className="mt-3 max-w-2xl text-muted">
                     Resultados, bancas, loterias, estatísticas e tendências em
                     uma estrutura mais organizada, com visual mais profissional
                     e preparada para crescer.
                   </p>
                 </div>
-
                 <div className="flex flex-wrap gap-4 md:justify-end">
                   <Link href="/bancas" className="btn-primary">
                     Explorar bancas
                   </Link>
-
                   <Link href="/estatisticas" className="btn-secondary">
                     Ver estatísticas
                   </Link>

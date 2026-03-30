@@ -33,8 +33,7 @@ export function Header() {
   }
 
   function abrirWhatsApp() {
-  console.log("numero:", process.env.NEXT_PUBLIC_WHATSAPP_NUMBER);
-  window.open(
+    window.open(
     `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=Quero%20receber%20palpites%20do%20SorteLab`,
     "_blank",
     "noopener,noreferrer"

@@ -11,8 +11,7 @@ const links = [
   { href: "/grupos-e-dezenas", label: "Grupos & Dezenas" },
   { href: "/resultado-mega-sena", label: "Mega-Sena" },
   { href: "/resultado-lotofacil", label: "Lotofácil" },
-  { href: "/estatisticas", label: "Estatísticas" },
-  { href: "/palpites", label: "Tendências" },
+  { href: "/estatisticas", label: "Análise & Tendências" },
 ];
 
 function isActivePath(pathname: string, href: string) {
@@ -25,41 +24,29 @@ export function Header() {
   const pathname = usePathname();
 
   function abrirInstagram() {
+    window.open("https://instagram.com/sorte_lab", "_blank", "noopener,noreferrer");
+  }
+
+  function abrirWhatsApp() {
     window.open(
-      "https://instagram.com/sorte_lab",
+      `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=Quero%20receber%20palpites%20do%20SorteLab`,
       "_blank",
       "noopener,noreferrer"
     );
   }
 
-  function abrirWhatsApp() {
-    window.open(
-    `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=Quero%20receber%20palpites%20do%20SorteLab`,
-    "_blank",
-    "noopener,noreferrer"
-  );
-}
-
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#040816]/88 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0c1425]/90 backdrop-blur-xl">
       <div className="container">
         <div className="flex items-center justify-between gap-4 py-4">
           <div className="min-w-0">
-            <Link
-              href="/"
-              className="flex items-center gap-3 transition hover:opacity-95"
-            >
+            <Link href="/" className="flex items-center gap-3 transition hover:opacity-95">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[rgba(245,196,81,0.18)] bg-[rgba(245,196,81,0.08)] shadow-[0_0_20px_rgba(245,196,81,0.08)]">
                 <span className="text-sm font-bold text-[#f5c451]">SL</span>
               </div>
-
               <div className="min-w-0">
-                <span className="block truncate text-xl font-semibold tracking-tight text-white">
-                  SorteLab
-                </span>
-                <span className="block truncate text-xs text-slate-400">
-                  Resultados, palpites e tendências
-                </span>
+                <span className="block truncate text-xl font-semibold tracking-tight text-white">SorteLab</span>
+                <span className="block truncate text-xs text-slate-400">Resultados, palpites e tendências</span>
               </div>
             </Link>
           </div>
@@ -67,7 +54,6 @@ export function Header() {
           <nav className="hidden items-center gap-2 lg:flex">
             {links.map((link) => {
               const active = isActivePath(pathname, link.href);
-
               return (
                 <Link
                   key={link.href}
@@ -93,7 +79,6 @@ export function Header() {
             >
               <InstagramIcon className="h-5 w-5" />
             </button>
-
             <button
               type="button"
               onClick={abrirWhatsApp}
@@ -121,7 +106,6 @@ export function Header() {
             <nav className="grid gap-3">
               {links.map((link) => {
                 const active = isActivePath(pathname, link.href);
-
                 return (
                   <Link
                     key={link.href}
@@ -138,7 +122,6 @@ export function Header() {
                 );
               })}
             </nav>
-
             <div className="mt-4 flex items-center gap-3">
               <button
                 type="button"
@@ -148,7 +131,6 @@ export function Header() {
               >
                 <InstagramIcon className="h-5 w-5" />
               </button>
-
               <button
                 type="button"
                 onClick={abrirWhatsApp}

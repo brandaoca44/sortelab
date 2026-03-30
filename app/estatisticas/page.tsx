@@ -57,6 +57,22 @@ const SIGNOS = {
   Peixes: { grupo: "10", bicho: "Coelho" },
 } as const;
 
+const GRUPOS_DEZENAS: Record<string, string[]> = {
+  "01": ["01","02","03","04"], "02": ["05","06","07","08"],
+  "03": ["09","10","11","12"], "04": ["13","14","15","16"],
+  "05": ["17","18","19","20"], "06": ["21","22","23","24"],
+  "07": ["25","26","27","28"], "08": ["29","30","31","32"],
+  "09": ["33","34","35","36"], "10": ["37","38","39","40"],
+  "11": ["41","42","43","44"], "12": ["45","46","47","48"],
+  "13": ["49","50","51","52"], "14": ["53","54","55","56"],
+  "15": ["57","58","59","60"], "16": ["61","62","63","64"],
+  "17": ["65","66","67","68"], "18": ["69","70","71","72"],
+  "19": ["73","74","75","76"], "20": ["77","78","79","80"],
+  "21": ["81","82","83","84"], "22": ["85","86","87","88"],
+  "23": ["89","90","91","92"], "24": ["93","94","95","96"],
+  "25": ["97","98","99","00"],
+};
+
 type Signo = keyof typeof SIGNOS;
 
 // Gera milhar aleatória mas determinística por signo + data
@@ -339,7 +355,12 @@ export default function AnalisePage() {
                     <div className="mt-6 space-y-4">
                       {Object.entries(stats.resultado).map(([horario, data]) => {
                         if (data.totalResultados === 0) return null;
-                        const milhar = `${String(Math.floor(Math.random() * 100)).padStart(2, "0")}${data.dezenaAtrasada !== "—" ? data.dezenaAtrasada : "00"}`;
+                        const grupoNum = data.grupoAtrasado !== "—" ? data.grupoAtrasado.split(" - ")[0] : "01";
+                        const dezenasDoGrupo = GRUPOS_DEZENAS[grupoNum] || ["00"];
+                        const seed = (horario + bancaSelecionada + new Date().toLocaleDateString("pt-BR")).split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+                        const dezenaEscolhida = dezenasDoGrupo[seed % dezenasDoGrupo.length];
+                        const prefixo = String(seed % 100).padStart(2, "0");
+                        const milhar = `${prefixo}${dezenaEscolhida}`;
                         return (
                           <div key={horario} className="surface-card rounded-2xl p-5">
                             <div className="flex items-center justify-between gap-4">

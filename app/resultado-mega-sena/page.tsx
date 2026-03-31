@@ -12,8 +12,19 @@ export const metadata: Metadata = {
   description: "Confira os últimos resultados da Mega-Sena no SorteLab.",
 };
 
+function formatarAcumulado(valor: string): string {
+  const num = Number(valor.replace(/\./g, "").replace(",", "."));
+  if (isNaN(num)) return valor;
+  if (num >= 1_000_000) {
+    const milhoes = num / 1_000_000;
+    return `${milhoes.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} MILHÕES`;
+  }
+  return num.toLocaleString("pt-BR");
+}
+
 export default async function ResultadoMegaSenaPage() {
   const lista = await kv.get<ResultadoLoteria[]>("loteria:megasena:lista") ?? [];
+  const acumulado = await kv.get<string>("loteria:megasena:acumulado");
 
   return (
     <>
@@ -32,6 +43,44 @@ export default async function ResultadoMegaSenaPage() {
                 automáticos para novos jogos.
               </p>
             </section>
+
+            {/* CARD ACUMULADO */}
+            {acumulado && (
+              <section className="mt-8">
+                <div className="relative overflow-hidden rounded-3xl border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.06)] p-6 text-center">
+                  {/* Estrelinhas CSS */}
+                  <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                    {[...Array(12)].map((_, i) => (
+                      <span
+                        key={i}
+                        className="absolute text-[#f5c451] opacity-60"
+                        style={{
+                          left: `${(i * 37 + 5) % 95}%`,
+                          top: `${(i * 53 + 10) % 80}%`,
+                          fontSize: `${8 + (i % 3) * 4}px`,
+                          animation: `pulse ${1.5 + (i % 3) * 0.5}s ease-in-out infinite`,
+                          animationDelay: `${(i * 0.2) % 1.5}s`,
+                        }}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+
+                  <p className="relative text-sm font-semibold uppercase tracking-widest text-[#f5c451]">
+                    Prêmio Acumulado
+                  </p>
+                  <p className="relative mt-2 text-4xl font-bold text-white md:text-5xl">
+                    R$ {formatarAcumulado(acumulado)}
+                  </p>
+                  <p className="relative mt-2 text-base font-semibold text-[#f5c451]">
+                    {formatarAcumulado(acumulado).includes("MILHÕES")
+                      ? `R$ ${Number(acumulado.replace(/\./g, "")).toLocaleString("pt-BR")}!!!`
+                      : "Não perca essa chance!"}
+                  </p>
+                </div>
+              </section>
+            )}
 
             <section className="mt-10">
               <LotteryGeneratorCard

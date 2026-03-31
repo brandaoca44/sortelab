@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ erro: "Senha incorreta" }, { status: 401 });
     }
 
-    // Salvar resultado do bicho
     if (tipo === "bicho") {
       const { banca, data, horario, normal, maluca } = dados;
       if (!banca || !data || !horario || !normal || !maluca) {
@@ -23,21 +22,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ sucesso: true, chave });
     }
 
-    // Salvar resultado de loteria
     if (tipo === "loteria") {
-      const { nome, concurso, data, dezenas } = dados;
+      const { nome, concurso, data, dezenas, acumulado } = dados;
       if (!nome || !concurso || !data || !dezenas) {
         return NextResponse.json({ erro: "Dados incompletos" }, { status: 400 });
       }
       const chave = `loteria:${nome}:${concurso}`;
       const listaAtual = await kv.get<object[]>(`loteria:${nome}:lista`) || [];
-      const novaLista = [{ concurso, data, dezenas }, ...listaAtual].slice(0, 20);
+      const novoItem = { concurso, data, dezenas, ...(acumulado ? { acumulado } : {}) };
+      const novaLista = [novoItem, ...listaAtual].slice(0, 20);
       await kv.set(`loteria:${nome}:lista`, novaLista);
-      await kv.set(chave, { concurso, data, dezenas });
+      await kv.set(chave, novoItem);
+
+      // Salva acumulado separadamente para fácil acesso
+      if (acumulado) {
+        await kv.set(`loteria:${nome}:acumulado`, acumulado);
+      }
+
       return NextResponse.json({ sucesso: true, chave });
     }
 
-    // Excluir resultado do bicho
     if (tipo === "excluir-bicho") {
       const { banca, data, horario } = dados;
       if (!banca || !data || !horario) {
@@ -48,7 +52,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ sucesso: true, chave });
     }
 
-    // Excluir concurso de loteria
     if (tipo === "excluir-loteria") {
       const { nome, concurso } = dados;
       if (!nome || !concurso) {
@@ -56,12 +59,9 @@ export async function POST(req: NextRequest) {
       }
       const chave = `loteria:${nome}:${concurso}`;
       await kv.del(chave);
-
-      // Remove também da lista
       const listaAtual = await kv.get<{ concurso: string }[]>(`loteria:${nome}:lista`) || [];
       const novaLista = listaAtual.filter((item) => item.concurso !== concurso);
       await kv.set(`loteria:${nome}:lista`, novaLista);
-
       return NextResponse.json({ sucesso: true, chave });
     }
 

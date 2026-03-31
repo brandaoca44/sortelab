@@ -55,7 +55,19 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-slate-500">
+        {/* AVISO DE RESPONSABILIDADE */}
+        <div className="mt-10 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
+          <p className="text-xs leading-5 text-slate-500 text-center">
+            <span className="font-semibold text-slate-400">Aviso:</span>{" "}
+            O SorteLab é uma plataforma de consulta de resultados e entretenimento.
+            As informações, palpites e tendências disponibilizadas têm caráter
+            exclusivamente informativo e não constituem incentivo ou facilitação
+            de qualquer atividade ilegal. O uso deste site é de responsabilidade
+            exclusiva do usuário. Jogue com responsabilidade.
+          </p>
+        </div>
+
+        <div className="mt-6 border-t border-white/10 pt-6 text-center text-xs text-slate-500">
           © {new Date().getFullYear()} SorteLab. Todos os direitos reservados.
         </div>
       </div>

@@ -61,6 +61,7 @@ export default function AdminPage() {
   const [concurso, setConcurso] = useState("");
   const [dataLoteria, setDataLoteria] = useState(getHojeBrasil());
   const [dezenas, setDezenas] = useState<string[]>(Array(6).fill(""));
+  const [acumulado, setAcumulado] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
@@ -98,9 +99,7 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (aba === "excluir" && autenticado) {
-      carregarLista();
-    }
+    if (aba === "excluir" && autenticado) carregarLista();
   }, [aba, autenticado, carregarLista]);
 
   function atualizarPremio(modalidade: "normal" | "maluca", index: number, campo: "grupo" | "milhar", valor: string) {
@@ -126,6 +125,7 @@ export default function AdminPage() {
     setPremiosMaluca(Array.from({ length: 10 }, getPremioVazio));
     setDezenas(Array(nomeLoteria === "megasena" ? 6 : 15).fill(""));
     setConcurso("");
+    setAcumulado("");
   }
 
   async function verificarSenha() {
@@ -155,7 +155,10 @@ export default function AdminPage() {
           },
         };
       } else {
-        body = { senha, tipo: "loteria", dados: { nome: nomeLoteria, concurso, data: dataLoteria, dezenas } };
+        body = {
+          senha, tipo: "loteria",
+          dados: { nome: nomeLoteria, concurso, data: dataLoteria, dezenas, acumulado },
+        };
       }
       const res = await fetch("/api/admin/resultado", {
         method: "POST",
@@ -177,7 +180,6 @@ export default function AdminPage() {
     setExcluindo(true);
     setMensagemExc("");
     setErroExc("");
-
     try {
       let body = {};
       if (excTipo === "bicho") {
@@ -188,7 +190,6 @@ export default function AdminPage() {
         const [nome, conc] = selecionado.split("|");
         body = { senha, tipo: "excluir-loteria", dados: { nome, concurso: conc } };
       }
-
       const res = await fetch("/api/admin/resultado", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -208,7 +209,6 @@ export default function AdminPage() {
     }
   }
 
-  // TELA DE LOGIN
   if (!autenticado) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0c1425] px-4">
@@ -216,14 +216,7 @@ export default function AdminPage() {
           <h1 className="title-premium text-2xl font-semibold">Painel Admin</h1>
           <p className="mt-2 text-sm text-muted">Digite a senha para acessar.</p>
           <div className="mt-6 grid gap-3">
-            <input
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && verificarSenha()}
-              placeholder="Senha"
-              className="input-base"
-            />
+            <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} onKeyDown={(e) => e.key === "Enter" && verificarSenha()} placeholder="Senha" className="input-base" />
             {erroSenha && <p className="text-sm text-red-400">{erroSenha}</p>}
             <button onClick={verificarSenha} className="btn-primary">Entrar</button>
           </div>
@@ -232,11 +225,9 @@ export default function AdminPage() {
     );
   }
 
-  // PAINEL PRINCIPAL
   return (
     <div className="min-h-screen bg-[#0c1425] px-4 py-10">
       <div className="mx-auto max-w-4xl">
-
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="title-premium text-3xl font-semibold">Painel Admin</h1>
@@ -245,29 +236,16 @@ export default function AdminPage() {
           <button onClick={() => setAutenticado(false)} className="btn-ghost text-sm">Sair</button>
         </div>
 
-        {/* ABAS PRINCIPAIS */}
         <div className="mb-6 flex gap-3">
-          <button
-            onClick={() => { setAba("adicionar"); setMensagem(""); setErro(""); }}
-            className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${aba === "adicionar" ? "border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.15)] text-gold" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}
-          >
-            Adicionar resultado
-          </button>
-          <button
-            onClick={() => { setAba("excluir"); }}
-            className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${aba === "excluir" ? "border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}
-          >
-            Excluir resultado
-          </button>
+          <button onClick={() => { setAba("adicionar"); setMensagem(""); setErro(""); }} className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${aba === "adicionar" ? "border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.15)] text-gold" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}>Adicionar resultado</button>
+          <button onClick={() => setAba("excluir")} className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${aba === "excluir" ? "border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}>Excluir resultado</button>
         </div>
 
-        {/* ======================== ABA ADICIONAR ======================== */}
         {aba === "adicionar" && (
           <>
             <div className="mb-6 flex gap-3">
               {(["bicho", "loteria"] as Tipo[]).map((t) => (
-                <button key={t} onClick={() => setTipo(t)}
-                  className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${tipo === t ? "border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.15)] text-gold" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}>
+                <button key={t} onClick={() => setTipo(t)} className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${tipo === t ? "border border-[rgba(245,196,81,0.3)] bg-[rgba(245,196,81,0.15)] text-gold" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}>
                   {t === "bicho" ? "Jogo do Bicho" : "Loteria"}
                 </button>
               ))}
@@ -336,7 +314,25 @@ export default function AdminPage() {
                     <input type="date" value={dataLoteria} onChange={(e) => setDataLoteria(e.target.value)} className="input-base" />
                   </div>
                 </div>
-                <div className="mt-8">
+
+                {/* ACUMULADO */}
+                <div className="mt-6">
+                  <label className="mb-2 block text-xs font-medium text-muted">
+                    Valor acumulado (opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={acumulado}
+                    onChange={(e) => setAcumulado(e.target.value)}
+                    placeholder="Ex: 50.000.000"
+                    className="input-base"
+                  />
+                  <p className="mt-1 text-xs text-muted">
+                    Digite o valor por extenso como aparece nos sites oficiais. Ex: 50.000.000
+                  </p>
+                </div>
+
+                <div className="mt-6">
                   <h2 className="mb-4 text-lg font-semibold text-white">Dezenas sorteadas</h2>
                   <div className="flex flex-wrap gap-3">
                     {dezenas.map((dezena, index) => (
@@ -355,14 +351,12 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* ======================== ABA EXCLUIR ======================== */}
         {aba === "excluir" && (
           <>
             <div className="mb-6 flex items-center justify-between">
               <div className="flex gap-3">
                 {(["bicho", "loteria"] as Tipo[]).map((t) => (
-                  <button key={t} onClick={() => { setExcTipo(t); setSelecionado(null); }}
-                    className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${excTipo === t ? "border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}>
+                  <button key={t} onClick={() => { setExcTipo(t); setSelecionado(null); }} className={`rounded-xl px-5 py-2.5 text-sm font-medium transition ${excTipo === t ? "border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] text-red-400" : "border border-white/10 bg-white/[0.03] text-slate-300"}`}>
                     {t === "bicho" ? "Jogo do Bicho" : "Loteria"}
                   </button>
                 ))}
@@ -372,39 +366,18 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {/* LISTA DE RESULTADOS DO BICHO */}
             {excTipo === "bicho" && (
               <div className="surface-card-strong rounded-3xl p-6">
-                <p className="mb-4 text-sm font-medium text-muted">
-                  Resultados de hoje — clique para selecionar e excluir
-                </p>
-                {carregandoLista ? (
-                  <p className="text-sm text-muted">Carregando...</p>
-                ) : resultadosBicho.length === 0 ? (
-                  <p className="text-sm text-muted">Nenhum resultado salvo hoje.</p>
-                ) : (
+                <p className="mb-4 text-sm font-medium text-muted">Resultados de hoje — clique para selecionar e excluir</p>
+                {carregandoLista ? <p className="text-sm text-muted">Carregando...</p> : resultadosBicho.length === 0 ? <p className="text-sm text-muted">Nenhum resultado salvo hoje.</p> : (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {resultadosBicho.map((item) => {
                       const sel = selecionado === item.chave;
                       return (
-                        <button
-                          key={item.chave}
-                          onClick={() => setSelecionado(sel ? null : item.chave)}
-                          className={`rounded-xl border p-4 text-left transition ${
-                            sel
-                              ? "border-red-500 bg-[rgba(239,68,68,0.12)]"
-                              : "border-white/10 bg-white/[0.03] hover:border-white/20"
-                          }`}
-                        >
-                          <p className="text-sm font-semibold text-white">
-                            {NOMES_BANCAS[item.banca] || item.banca}
-                          </p>
+                        <button key={item.chave} onClick={() => setSelecionado(sel ? null : item.chave)} className={`rounded-xl border p-4 text-left transition ${sel ? "border-red-500 bg-[rgba(239,68,68,0.12)]" : "border-white/10 bg-white/[0.03] hover:border-white/20"}`}>
+                          <p className="text-sm font-semibold text-white">{NOMES_BANCAS[item.banca] || item.banca}</p>
                           <p className="mt-1 text-xs text-muted">{item.horario}</p>
-                          {sel && (
-                            <p className="mt-2 text-xs font-semibold text-red-400">
-                              Selecionado para excluir
-                            </p>
-                          )}
+                          {sel && <p className="mt-2 text-xs font-semibold text-red-400">Selecionado para excluir</p>}
                         </button>
                       );
                     })}
@@ -413,40 +386,19 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* LISTA DE RESULTADOS DE LOTERIA */}
             {excTipo === "loteria" && (
               <div className="surface-card-strong rounded-3xl p-6">
-                <p className="mb-4 text-sm font-medium text-muted">
-                  Concursos salvos — clique para selecionar e excluir
-                </p>
-                {carregandoLista ? (
-                  <p className="text-sm text-muted">Carregando...</p>
-                ) : resultadosLoteria.length === 0 ? (
-                  <p className="text-sm text-muted">Nenhum concurso salvo.</p>
-                ) : (
+                <p className="mb-4 text-sm font-medium text-muted">Concursos salvos — clique para selecionar e excluir</p>
+                {carregandoLista ? <p className="text-sm text-muted">Carregando...</p> : resultadosLoteria.length === 0 ? <p className="text-sm text-muted">Nenhum concurso salvo.</p> : (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {resultadosLoteria.map((item) => {
                       const chave = `${item.nome}|${item.concurso}`;
                       const sel = selecionado === chave;
                       return (
-                        <button
-                          key={chave}
-                          onClick={() => setSelecionado(sel ? null : chave)}
-                          className={`rounded-xl border p-4 text-left transition ${
-                            sel
-                              ? "border-red-500 bg-[rgba(239,68,68,0.12)]"
-                              : "border-white/10 bg-white/[0.03] hover:border-white/20"
-                          }`}
-                        >
-                          <p className="text-sm font-semibold text-white capitalize">
-                            {item.nome === "megasena" ? "Mega-Sena" : "Lotofácil"}
-                          </p>
+                        <button key={chave} onClick={() => setSelecionado(sel ? null : chave)} className={`rounded-xl border p-4 text-left transition ${sel ? "border-red-500 bg-[rgba(239,68,68,0.12)]" : "border-white/10 bg-white/[0.03] hover:border-white/20"}`}>
+                          <p className="text-sm font-semibold text-white capitalize">{item.nome === "megasena" ? "Mega-Sena" : "Lotofácil"}</p>
                           <p className="mt-1 text-xs text-muted">Concurso {item.concurso} • {item.data}</p>
-                          {sel && (
-                            <p className="mt-2 text-xs font-semibold text-red-400">
-                              Selecionado para excluir
-                            </p>
-                          )}
+                          {sel && <p className="mt-2 text-xs font-semibold text-red-400">Selecionado para excluir</p>}
                         </button>
                       );
                     })}
@@ -457,13 +409,8 @@ export default function AdminPage() {
 
             {mensagemExc && <div className="mt-4 rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.1)] px-4 py-3 text-sm text-green-400">{mensagemExc}</div>}
             {erroExc && <div className="mt-4 rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.1)] px-4 py-3 text-sm text-red-400">{erroExc}</div>}
-
             {selecionado && (
-              <button
-                onClick={excluir}
-                disabled={excluindo}
-                className="mt-6 w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
-              >
+              <button onClick={excluir} disabled={excluindo} className="mt-6 w-full rounded-xl bg-red-600 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
                 {excluindo ? "Excluindo..." : "Confirmar exclusão"}
               </button>
             )}

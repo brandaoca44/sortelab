@@ -33,7 +33,7 @@ function UltimoGanhador() {
 
   const buscarGanhadores = useCallback(async () => {
     try {
-      const res = await fetch("/api/ganhador");
+      const res = await fetch("/api/ganhador", { cache: "no-store" });
       const json = await res.json();
       if (json.sucesso && json.ganhadores.length > 0) {
         setGanhadores(json.ganhadores);

@@ -1,111 +1,122 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+const STORAGE_KEY = "sortelab_ganhador_v2";
+const INTERVALO_MS = 30 * 60 * 1000;
+
+type Ganhador = {
+  nome: string;
+  banca: string;
+  horario: string;
+  modalidadeLabel: string;
+  modalidade: string;
+  palpite: string;
+  grupo: string;
+  bicho: string;
+  aposta: number;
+  premio: number;
+};
 
 // ========================
-// DADOS DO PAINEL GANHADOR
+// PAINEL ÚLTIMO GANHADOR
 // ========================
-const BANCAS_NOMES = [
-  "Bahia", "Nacional", "São Paulo", "Look", "Rio de Janeiro",
-  "Lotep", "Lotece", "Goiás", "Minas Gerais",
-];
-
-const MODALIDADES = [
-  { nome: "Milhar", mult: 8000, apostas: [1, 2, 5, 10, 20, 50, 100, 200, 300] },
-  { nome: "Centena", mult: 800, apostas: [1, 2, 5, 10, 20, 50, 100, 200, 300] },
-  { nome: "Dezena", mult: 80, apostas: [1, 2, 5, 10, 20, 50, 100, 200, 500] },
-  { nome: "Grupo", mult: 20, apostas: [1, 2, 5, 10, 20, 50, 100, 300, 500] },
-  { nome: "Duque Dez", mult: 300, apostas: [1, 2, 5, 10, 20, 50, 100] },
-  { nome: "Duque GP", mult: 180, apostas: [1, 2, 5, 10, 20, 50, 100, 200] },
-  { nome: "Terno Dez", mult: 5000, apostas: [1, 2, 5, 10, 20, 50] },
-  { nome: "Terno Dez Seco", mult: 10000, apostas: [1, 2, 5, 10, 20] },
-  { nome: "Terno GP", mult: 1500, apostas: [1, 2, 5, 10, 20, 50, 100] },
-  { nome: "Quadra GP", mult: 1000, apostas: [1, 2, 5, 10, 20, 50, 100] },
-  { nome: "Unidade", mult: 8, apostas: [5, 10, 20, 50, 100, 200, 500, 1000] },
-];
-
-const HORARIOS = ["10:00", "12:00", "14:00", "15:00", "16:00", "18:00", "19:00", "21:00"];
-const MODALIDADES_LABEL = ["Normal", "Maluca"];
-
-const NOMES = [
-  "J. Silva", "M. Santos", "A. Oliveira", "C. Souza", "R. Lima",
-  "P. Costa", "L. Ferreira", "T. Alves", "D. Pereira", "F. Rodrigues",
-  "K. Nascimento", "B. Carvalho", "G. Martins", "H. Araújo", "N. Gomes",
-  "V. Ribeiro", "E. Mendes", "I. Barbosa", "W. Cardoso", "S. Rocha",
-];
-
-const MILHARES = [
-  "4587","1208","7742","3391","8815","6420","5521","7088","1436","6214",
-  "8142","3905","2321","9544","5019","0706","3102","1917","2244","5834",
-  "7711","6248","9056","1439","8624","4908","7352","2845","3187","4492",
-];
-
-function gerarGanhador(seed: number) {
-  const s = (n: number, max: number) => Math.abs((seed * 1103515245 + n * 12345) & 0x7fffffff) % max;
-  const modalidade = MODALIDADES[s(1, MODALIDADES.length)];
-  const aposta = modalidade.apostas[s(2, modalidade.apostas.length)];
-  const premio = aposta * modalidade.mult;
-
-  return {
-    nome: NOMES[s(3, NOMES.length)],
-    banca: BANCAS_NOMES[s(4, BANCAS_NOMES.length)],
-    modalidadeLabel: MODALIDADES_LABEL[s(5, MODALIDADES_LABEL.length)],
-    modalidade: modalidade.nome,
-    palpite: MILHARES[s(6, MILHARES.length)],
-    horario: HORARIOS[s(7, HORARIOS.length)],
-    aposta,
-    premio,
-  };
-}
-
-// Gera 100 ganhadores fixos (baseados em índice, não aleatórios a cada render)
-const GANHADORES = Array.from({ length: 100 }, (_, i) => gerarGanhador(i * 7919 + 31337));
-
-const STORAGE_KEY = "sortelab_ganhador";
-const INTERVALO_MS = 30 * 60 * 1000; // 30 minutos
-
 function UltimoGanhador() {
-  const [ganhador, setGanhador] = useState(GANHADORES[0]);
-  const [proximo, setProximo] = useState(0);
+  const [ganhadores, setGanhadores] = useState<Ganhador[]>([]);
+  const [atual, setAtual] = useState<Ganhador | null>(null);
+  const [indiceAtual, setIndiceAtual] = useState(0);
+  const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
+  const buscarGanhadores = useCallback(async () => {
     try {
-      const salvo = localStorage.getItem(STORAGE_KEY);
-      if (salvo) {
-        const { indice, timestamp } = JSON.parse(salvo);
-        const agora = Date.now();
-        if (agora - timestamp < INTERVALO_MS) {
-          setGanhador(GANHADORES[indice % GANHADORES.length]);
-          const restante = INTERVALO_MS - (agora - timestamp);
-          const timer = setTimeout(() => avancar(indice), restante);
-          return () => clearTimeout(timer);
-        }
+      const res = await fetch("/api/ganhador");
+      const json = await res.json();
+      if (json.sucesso && json.ganhadores.length > 0) {
+        setGanhadores(json.ganhadores);
+        return json.ganhadores as Ganhador[];
       }
-      avancar(Math.floor(Math.random() * GANHADORES.length));
-    } catch {
-      avancar(0);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch {}
+    return [];
   }, []);
 
-  function avancar(indice: number) {
-    const novoIndice = (indice + 1) % GANHADORES.length;
-    setGanhador(GANHADORES[novoIndice]);
-    setProximo(novoIndice);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ indice: novoIndice, timestamp: Date.now() }));
-    } catch {}
-    const timer = setTimeout(() => avancar(novoIndice), INTERVALO_MS);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+
+    async function iniciar() {
+      setCarregando(true);
+      const lista = await buscarGanhadores();
+      setCarregando(false);
+
+      if (lista.length === 0) return;
+
+      // Verifica localStorage
+      try {
+        const salvo = localStorage.getItem(STORAGE_KEY);
+        if (salvo) {
+          const { indice, timestamp } = JSON.parse(salvo);
+          const agora = Date.now();
+          const restante = INTERVALO_MS - (agora - timestamp);
+
+          if (restante > 0 && indice < lista.length) {
+            setAtual(lista[indice]);
+            setIndiceAtual(indice);
+            timer = setTimeout(() => avancar(lista, indice), restante);
+            return;
+          }
+        }
+      } catch {}
+
+      // Inicia num índice aleatório
+      const inicio = Math.floor(Math.random() * lista.length);
+      avancar(lista, inicio - 1);
+    }
+
+    function avancar(lista: Ganhador[], indiceAnterior: number) {
+      const novoIndice = (indiceAnterior + 1) % lista.length;
+      setAtual(lista[novoIndice]);
+      setIndiceAtual(novoIndice);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          indice: novoIndice,
+          timestamp: Date.now(),
+        }));
+      } catch {}
+      timer = setTimeout(() => avancar(lista, novoIndice), INTERVALO_MS);
+    }
+
+    iniciar();
     return () => clearTimeout(timer);
+  }, [buscarGanhadores]);
+
+  // Sem resultados ainda
+  if (!carregando && ganhadores.length === 0) {
+    return (
+      <div className="surface-card-strong rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
+        <div className="text-4xl mb-4">🍀</div>
+        <p className="text-lg font-semibold text-white">Sem ganhadores ainda</p>
+        <p className="mt-2 text-sm text-muted max-w-xs">
+          O próximo pode ser você! Os resultados de hoje ainda não foram divulgados.
+        </p>
+        <Link href="/bancas" className="btn-primary mt-6 text-sm px-6">
+          Ver bancas
+        </Link>
+      </div>
+    );
+  }
+
+  // Carregando
+  if (carregando || !atual) {
+    return (
+      <div className="surface-card-strong rounded-2xl p-4 md:p-5 animate-pulse min-h-[280px]" />
+    );
   }
 
   return (
-    <div className="surface-card-strong rounded-2xl p-4 md:p-5 h-full">
+    <div className="surface-card-strong rounded-2xl p-4 md:p-5">
       <div className="flex items-center gap-2 mb-3">
         <span className="flex h-2 w-2 rounded-full bg-green-400 animate-pulse" />
         <p className="text-xs font-semibold uppercase tracking-widest text-green-400">
@@ -118,8 +129,8 @@ function UltimoGanhador() {
           <span className="text-base">🏆</span>
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">{ganhador.nome}</p>
-          <p className="text-xs text-muted">{ganhador.horario} — {ganhador.banca}</p>
+          <p className="text-sm font-semibold text-white">{atual.nome}</p>
+          <p className="text-xs text-muted">{atual.horario} — {atual.banca}</p>
         </div>
       </div>
 
@@ -127,29 +138,24 @@ function UltimoGanhador() {
         <div className="grid grid-cols-2 gap-2">
           <div className="surface-soft rounded-xl p-3">
             <p className="text-xs text-muted">Loteria</p>
-            <strong className="mt-1 block text-sm text-white">
-              {ganhador.modalidadeLabel}
-            </strong>
+            <strong className="mt-1 block text-sm text-white">{atual.modalidadeLabel}</strong>
           </div>
           <div className="surface-soft rounded-xl p-3">
             <p className="text-xs text-muted">Modalidade</p>
-            <strong className="mt-1 block text-sm text-white">
-              {ganhador.modalidade}
-            </strong>
+            <strong className="mt-1 block text-sm text-white">{atual.modalidade}</strong>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div className="surface-soft rounded-xl p-3">
             <p className="text-xs text-muted">Palpite</p>
-            <strong className="mt-1 block text-lg text-gold">
-              {ganhador.palpite}
-            </strong>
+            <strong className="mt-1 block text-lg text-gold">{atual.palpite}</strong>
+            <p className="text-xs text-muted">{atual.grupo} - {atual.bicho}</p>
           </div>
           <div className="surface-soft rounded-xl p-3">
             <p className="text-xs text-muted">Aposta</p>
             <strong className="mt-1 block text-sm text-white">
-              R$ {ganhador.aposta.toLocaleString("pt-BR")}
+              R$ {atual.aposta.toLocaleString("pt-BR")}
             </strong>
           </div>
         </div>
@@ -157,7 +163,7 @@ function UltimoGanhador() {
         <div className="rounded-xl border border-[rgba(34,197,94,0.3)] bg-[rgba(34,197,94,0.08)] p-3 text-center">
           <p className="text-xs text-green-400 font-medium uppercase tracking-wide">Prêmio recebido</p>
           <strong className="mt-1 block text-2xl font-bold text-green-400">
-            R$ {ganhador.premio.toLocaleString("pt-BR")}
+            R$ {atual.premio.toLocaleString("pt-BR")}
           </strong>
         </div>
       </div>
@@ -215,16 +221,12 @@ function SectionHeader({ title, description, href, cta }: { title: string; descr
   );
 }
 
-// ========================
-// PÁGINA PRINCIPAL
-// ========================
 export default function Home() {
   return (
     <>
       <Header />
 
       <main className="py-16">
-        {/* HERO */}
         <section className="border-b border-white/10">
           <div className="container py-10 md:py-12">
             <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-stretch">
@@ -242,7 +244,6 @@ export default function Home() {
                   <Link href="/resultado-lotofacil" className="btn-secondary px-5 py-2.5 text-sm">Lotofácil</Link>
                 </div>
               </div>
-
               <UltimoGanhador />
             </div>
           </div>

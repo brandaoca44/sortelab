@@ -28,7 +28,6 @@ const MODALIDADES = [
   { nome: "Milhar", mult: 8000, apostas: [1, 2, 5, 10, 20, 50, 100, 200, 300] },
   { nome: "Centena", mult: 800, apostas: [1, 2, 5, 10, 20, 50, 100, 200, 300] },
   { nome: "Dezena", mult: 80, apostas: [1, 2, 5, 10, 20, 50, 100, 200, 500] },
-  { nome: "Grupo", mult: 20, apostas: [1, 2, 5, 10, 20, 50, 100, 300, 500] },
   { nome: "Unidade", mult: 8, apostas: [5, 10, 20, 50, 100, 200, 500, 1000] },
 ];
 
@@ -52,40 +51,37 @@ export async function GET() {
       bicho: string;
     }[] = [];
 
-    // Busca todos os resultados reais de hoje
     for (const banca of bancas) {
       for (const horario of banca.horarios) {
         const chave = `bicho:${banca.slug}:${hoje}:${horario}`;
         const resultado = await kv.get<ResultadoModalidade>(chave);
 
         if (resultado) {
-          // Adiciona resultados normais
+          // Apenas o 1º prêmio normal
           if (resultado.normal.length > 0) {
-            for (const premio of resultado.normal) {
-              resultados.push({
-                banca: banca.nome,
-                slug: banca.slug,
-                horario,
-                modalidadeLabel: "Normal",
-                palpite: premio.milhar,
-                grupo: premio.grupo,
-                bicho: premio.bicho,
-              });
-            }
+            const primeiro = resultado.normal[0];
+            resultados.push({
+              banca: banca.nome,
+              slug: banca.slug,
+              horario,
+              modalidadeLabel: "Normal",
+              palpite: primeiro.milhar,
+              grupo: primeiro.grupo,
+              bicho: primeiro.bicho,
+            });
           }
-          // Adiciona resultados maluca
+          // Apenas o 1º prêmio maluca
           if (resultado.maluca.length > 0) {
-            for (const premio of resultado.maluca) {
-              resultados.push({
-                banca: banca.nome,
-                slug: banca.slug,
-                horario,
-                modalidadeLabel: "Maluca",
-                palpite: premio.milhar,
-                grupo: premio.grupo,
-                bicho: premio.bicho,
-              });
-            }
+            const primeiro = resultado.maluca[0];
+            resultados.push({
+              banca: banca.nome,
+              slug: banca.slug,
+              horario,
+              modalidadeLabel: "Maluca",
+              palpite: primeiro.milhar,
+              grupo: primeiro.grupo,
+              bicho: primeiro.bicho,
+            });
           }
         }
       }
@@ -95,7 +91,6 @@ export async function GET() {
       return NextResponse.json({ sucesso: true, ganhadores: [] });
     }
 
-    // Gera 100 ganhadores combinando resultados reais com modalidades aleatórias
     const ganhadores = Array.from({ length: Math.min(100, resultados.length * 10) }, (_, i) => {
       const seed = i * 7919 + 31337;
       const s = (n: number, max: number) =>
@@ -107,15 +102,23 @@ export async function GET() {
       const premio = aposta * modalidade.mult;
       const nome = NOMES[s(4, NOMES.length)];
 
+      const milhar = resultado.palpite;
+      const palpiteFormatado =
+        modalidade.nome === "Unidade" ? milhar.slice(-1) :
+        modalidade.nome === "Dezena" ? milhar.slice(-2) :
+        modalidade.nome === "Centena" ? milhar.slice(-3) :
+        milhar;
+
       return {
         nome,
         banca: resultado.banca,
         horario: resultado.horario,
         modalidadeLabel: resultado.modalidadeLabel,
         modalidade: modalidade.nome,
-        palpite: resultado.palpite,
+        palpite: palpiteFormatado,
         grupo: resultado.grupo,
         bicho: resultado.bicho,
+        premioPos: "1º Prêmio",
         aposta,
         premio,
       };

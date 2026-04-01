@@ -18,17 +18,14 @@ type Ganhador = {
   palpite: string;
   grupo: string;
   bicho: string;
+  premioPos: string;
   aposta: number;
   premio: number;
 };
 
-// ========================
-// PAINEL ÚLTIMO GANHADOR
-// ========================
 function UltimoGanhador() {
   const [ganhadores, setGanhadores] = useState<Ganhador[]>([]);
   const [atual, setAtual] = useState<Ganhador | null>(null);
-  const [indiceAtual, setIndiceAtual] = useState(0);
   const [carregando, setCarregando] = useState(true);
 
   const buscarGanhadores = useCallback(async () => {
@@ -50,27 +47,22 @@ function UltimoGanhador() {
       setCarregando(true);
       const lista = await buscarGanhadores();
       setCarregando(false);
-
       if (lista.length === 0) return;
 
-      // Verifica localStorage
       try {
         const salvo = localStorage.getItem(STORAGE_KEY);
         if (salvo) {
           const { indice, timestamp } = JSON.parse(salvo);
           const agora = Date.now();
           const restante = INTERVALO_MS - (agora - timestamp);
-
           if (restante > 0 && indice < lista.length) {
             setAtual(lista[indice]);
-            setIndiceAtual(indice);
             timer = setTimeout(() => avancar(lista, indice), restante);
             return;
           }
         }
       } catch {}
 
-      // Inicia num índice aleatório
       const inicio = Math.floor(Math.random() * lista.length);
       avancar(lista, inicio - 1);
     }
@@ -78,12 +70,8 @@ function UltimoGanhador() {
     function avancar(lista: Ganhador[], indiceAnterior: number) {
       const novoIndice = (indiceAnterior + 1) % lista.length;
       setAtual(lista[novoIndice]);
-      setIndiceAtual(novoIndice);
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          indice: novoIndice,
-          timestamp: Date.now(),
-        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ indice: novoIndice, timestamp: Date.now() }));
       } catch {}
       timer = setTimeout(() => avancar(lista, novoIndice), INTERVALO_MS);
     }
@@ -92,7 +80,6 @@ function UltimoGanhador() {
     return () => clearTimeout(timer);
   }, [buscarGanhadores]);
 
-  // Sem resultados ainda
   if (!carregando && ganhadores.length === 0) {
     return (
       <div className="surface-card-strong rounded-2xl p-6 md:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
@@ -101,18 +88,13 @@ function UltimoGanhador() {
         <p className="mt-2 text-sm text-muted max-w-xs">
           O próximo pode ser você! Os resultados de hoje ainda não foram divulgados.
         </p>
-        <Link href="/bancas" className="btn-primary mt-6 text-sm px-6">
-          Ver bancas
-        </Link>
+        <Link href="/bancas" className="btn-primary mt-6 text-sm px-6">Ver bancas</Link>
       </div>
     );
   }
 
-  // Carregando
   if (carregando || !atual) {
-    return (
-      <div className="surface-card-strong rounded-2xl p-4 md:p-5 animate-pulse min-h-[280px]" />
-    );
+    return <div className="surface-card-strong rounded-2xl p-4 md:p-5 animate-pulse min-h-[280px]" />;
   }
 
   return (
@@ -148,7 +130,7 @@ function UltimoGanhador() {
 
         <div className="grid grid-cols-2 gap-2">
           <div className="surface-soft rounded-xl p-3">
-            <p className="text-xs text-muted">Palpite</p>
+            <p className="text-xs text-muted">Palpite — {atual.premioPos}</p>
             <strong className="mt-1 block text-lg text-gold">{atual.palpite}</strong>
             <p className="text-xs text-muted">{atual.grupo} - {atual.bicho}</p>
           </div>
@@ -171,9 +153,6 @@ function UltimoGanhador() {
   );
 }
 
-// ========================
-// COMPONENTES AUXILIARES
-// ========================
 const atalhos = [
   { titulo: "Bancas", descricao: "Consulte Bahia, Nacional, Look, Rio de Janeiro, Lotep, Lotece, São Paulo, Goiás e Minas Gerais.", href: "/bancas", tag: "Resultados por banca" },
   { titulo: "Mega-Sena", descricao: "Veja concursos recentes e acompanhe resultados rapidamente.", href: "/resultado-mega-sena", tag: "Loterias" },
@@ -225,7 +204,6 @@ export default function Home() {
   return (
     <>
       <Header />
-
       <main className="py-16">
         <section className="border-b border-white/10">
           <div className="container py-10 md:py-12">
@@ -336,7 +314,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-
       <Footer />
     </>
   );

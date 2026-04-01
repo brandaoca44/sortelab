@@ -29,12 +29,6 @@ const MODALIDADES = [
   { nome: "Centena", mult: 800, apostas: [1, 2, 5, 10, 20, 50, 100, 200, 300] },
   { nome: "Dezena", mult: 80, apostas: [1, 2, 5, 10, 20, 50, 100, 200, 500] },
   { nome: "Grupo", mult: 20, apostas: [1, 2, 5, 10, 20, 50, 100, 300, 500] },
-  { nome: "Duque Dez", mult: 300, apostas: [1, 2, 5, 10, 20, 50, 100] },
-  { nome: "Duque GP", mult: 180, apostas: [1, 2, 5, 10, 20, 50, 100, 200] },
-  { nome: "Terno Dez", mult: 5000, apostas: [1, 2, 5, 10, 20, 50] },
-  { nome: "Terno Dez Seco", mult: 10000, apostas: [1, 2, 5, 10, 20] },
-  { nome: "Terno GP", mult: 1500, apostas: [1, 2, 5, 10, 20, 50, 100] },
-  { nome: "Quadra GP", mult: 1000, apostas: [1, 2, 5, 10, 20, 50, 100] },
   { nome: "Unidade", mult: 8, apostas: [5, 10, 20, 50, 100, 200, 500, 1000] },
 ];
 

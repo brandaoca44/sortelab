@@ -184,7 +184,7 @@ export default function AnalisePage() {
     setCarregando(true);
     setStats(null);
     try {
-      const res = await fetch(`/api/admin/stats?banca=${slug}&dias=30`);
+      const res = await fetch(`/api/admin/stats?banca=${slug}&dias=7`);
       const json = await res.json();
       if (json.sucesso) setStats(json);
     } catch {
@@ -262,7 +262,7 @@ export default function AnalisePage() {
                       <span className="badge-primary">{stats.totalDiasComDados} dia{stats.totalDiasComDados !== 1 ? "s" : ""} de dados</span>
                       {stats.totalDiasComDados < 7 && (
                         <span className="rounded-full border border-[rgba(245,196,81,0.2)] bg-[rgba(245,196,81,0.06)] px-3 py-1 text-xs text-gold">
-                          Acumulando histórico — estatísticas ficam mais precisas com 30 dias
+                          Acumulando histórico — estatísticas ficam mais precisas com 7 dias
                         </span>
                       )}
                     </div>
@@ -274,7 +274,7 @@ export default function AnalisePage() {
                   ) : stats ? (
                     <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                       {Object.entries(stats.resultado).map(([horario, data]) => (
-                        <StatCard key={horario} horario={horario} stats={data} diasMeta={30} />
+                        <StatCard key={horario} horario={horario} stats={data} diasMeta={7} />
                       ))}
                     </div>
                   ) : null}

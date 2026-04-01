@@ -12,9 +12,10 @@ export const metadata: Metadata = {
   description: "Confira os últimos resultados da Lotofácil no SorteLab.",
 };
 
-function formatarAcumulado(valor: string): string {
-  const num = Number(valor.replace(/\./g, "").replace(",", "."));
-  if (isNaN(num)) return valor;
+function formatarAcumulado(valor: unknown): string {
+  const str = String(valor).replace(/\./g, "").replace(",", ".");
+  const num = Number(str);
+  if (isNaN(num)) return String(valor);
   if (num >= 1_000_000) {
     const milhoes = num / 1_000_000;
     return `${milhoes.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} MILHÕES`;

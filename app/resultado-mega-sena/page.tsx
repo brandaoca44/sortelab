@@ -76,8 +76,8 @@ export default async function ResultadoMegaSenaPage() {
                   </p>
                   <p className="relative mt-2 text-base font-semibold text-[#f5c451]">
                     {formatarAcumulado(acumulado).includes("MILHÕES")
-                      ? `R$ ${Number(acumulado.replace(/\./g, "")).toLocaleString("pt-BR")}!!!`
-                      : "Não perca essa chance!"}
+  ? `R$ ${Number(String(acumulado).replace(/\./g, "")).toLocaleString("pt-BR")}!!!`
+  : "Não perca essa chance!"}
                   </p>
                 </div>
               </section>

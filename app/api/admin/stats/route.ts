@@ -127,11 +127,8 @@ export async function GET(req: NextRequest) {
       const grupoFrequente = gruposSorted[0]?.[0].replace("-", " - ") || "—";
 
       // Grupo mais atrasado (não aparece há mais tempo)
-      const grupoAtrasado = todosGrupos
-        .filter((g) => {
-          const key = g.replace("-", "-");
-          return !stats.grupos[key];
-        })[0]?.replace("-", " - ") || gruposSorted[gruposSorted.length - 1]?.[0].replace("-", " - ") || "—";
+      // Grupo mais atrasado = o que apareceu menos vezes entre os que apareceram
+const grupoAtrasado = gruposSorted[gruposSorted.length - 1]?.[0].replace("-", " - ") || "—";
 
       // Dezena mais frequente
       const dezenasSorted = Object.entries(stats.dezenas).sort((a, b) => b[1] - a[1]);

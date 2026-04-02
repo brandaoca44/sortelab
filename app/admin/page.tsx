@@ -50,7 +50,6 @@ export default function AdminPage() {
   const [erroSenha, setErroSenha] = useState("");
   const [aba, setAba] = useState<Aba>("adicionar");
 
-  // --- ADICIONAR ---
   const [tipo, setTipo] = useState<Tipo>("bicho");
   const [banca, setBanca] = useState(bancas[0].slug);
   const [data, setData] = useState(getHojeBrasil());
@@ -62,11 +61,11 @@ export default function AdminPage() {
   const [dataLoteria, setDataLoteria] = useState(getHojeBrasil());
   const [dezenas, setDezenas] = useState<string[]>(Array(6).fill(""));
   const [acumulado, setAcumulado] = useState("");
+  const [proximoSorteio, setProximoSorteio] = useState("");
   const [salvando, setSalvando] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
 
-  // --- EXCLUIR ---
   const [excTipo, setExcTipo] = useState<Tipo>("bicho");
   const [resultadosBicho, setResultadosBicho] = useState<ResultadoBicho[]>([]);
   const [resultadosLoteria, setResultadosLoteria] = useState<ResultadoLoteria[]>([]);
@@ -126,6 +125,7 @@ export default function AdminPage() {
     setDezenas(Array(nomeLoteria === "megasena" ? 6 : 15).fill(""));
     setConcurso("");
     setAcumulado("");
+    setProximoSorteio("");
   }
 
   async function verificarSenha() {
@@ -157,7 +157,14 @@ export default function AdminPage() {
       } else {
         body = {
           senha, tipo: "loteria",
-          dados: { nome: nomeLoteria, concurso, data: dataLoteria, dezenas, acumulado },
+          dados: {
+            nome: nomeLoteria,
+            concurso,
+            data: dataLoteria,
+            dezenas,
+            acumulado,
+            proximoSorteio,
+          },
         };
       }
       const res = await fetch("/api/admin/resultado", {
@@ -310,26 +317,37 @@ export default function AdminPage() {
                     <input type="text" value={concurso} onChange={(e) => setConcurso(e.target.value)} placeholder="Ex: 2822" className="input-base" />
                   </div>
                   <div>
-                    <label className="mb-2 block text-xs font-medium text-muted">Data</label>
+                    <label className="mb-2 block text-xs font-medium text-muted">Data do sorteio</label>
                     <input type="date" value={dataLoteria} onChange={(e) => setDataLoteria(e.target.value)} className="input-base" />
                   </div>
                 </div>
 
-                {/* ACUMULADO */}
-                <div className="mt-6">
-                  <label className="mb-2 block text-xs font-medium text-muted">
-                    Valor acumulado (opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={acumulado}
-                    onChange={(e) => setAcumulado(e.target.value)}
-                    placeholder="Ex: 50.000.000"
-                    className="input-base"
-                  />
-                  <p className="mt-1 text-xs text-muted">
-                    Digite o valor por extenso como aparece nos sites oficiais. Ex: 50.000.000
-                  </p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-xs font-medium text-muted">
+                      Valor acumulado (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={acumulado}
+                      onChange={(e) => setAcumulado(e.target.value)}
+                      placeholder="Ex: 7500000"
+                      className="input-base"
+                    />
+                    <p className="mt-1 text-xs text-muted">Só números. Ex: 7500000</p>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-xs font-medium text-muted">
+                      Próximo sorteio (opcional)
+                    </label>
+                    <input
+                      type="date"
+                      value={proximoSorteio}
+                      onChange={(e) => setProximoSorteio(e.target.value)}
+                      className="input-base"
+                    />
+                    <p className="mt-1 text-xs text-muted">Data do próximo concurso</p>
+                  </div>
                 </div>
 
                 <div className="mt-6">

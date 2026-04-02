@@ -23,20 +23,24 @@ export async function POST(req: NextRequest) {
     }
 
     if (tipo === "loteria") {
-      const { nome, concurso, data, dezenas, acumulado } = dados;
+      const { nome, concurso, data, dezenas, acumulado, proximoSorteio } = dados;
       if (!nome || !concurso || !data || !dezenas) {
         return NextResponse.json({ erro: "Dados incompletos" }, { status: 400 });
       }
+
       const chave = `loteria:${nome}:${concurso}`;
       const listaAtual = await kv.get<object[]>(`loteria:${nome}:lista`) || [];
-      const novoItem = { concurso, data, dezenas, ...(acumulado ? { acumulado } : {}) };
+      const novoItem = { concurso, data, dezenas };
       const novaLista = [novoItem, ...listaAtual].slice(0, 20);
       await kv.set(`loteria:${nome}:lista`, novaLista);
       await kv.set(chave, novoItem);
 
-      // Salva acumulado separadamente para fácil acesso
-      if (acumulado) {
-        await kv.set(`loteria:${nome}:acumulado`, acumulado);
+      // Salva acumulado como objeto com proximoSorteio
+      if (acumulado || proximoSorteio) {
+        await kv.set(`loteria:${nome}:acumulado`, {
+          valor: acumulado || "",
+          proximoSorteio: proximoSorteio || "",
+        });
       }
 
       return NextResponse.json({ sucesso: true, chave });

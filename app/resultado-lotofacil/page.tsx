@@ -18,7 +18,7 @@ function formatarAcumulado(valor: unknown): string {
   if (isNaN(num)) return String(valor);
   if (num >= 1_000_000) {
     const milhoes = num / 1_000_000;
-    return `${milhoes.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} MILHÕES`;
+    return `${milhoes.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 1 })} MILHÕES`;
   }
   return num.toLocaleString("pt-BR");
 }

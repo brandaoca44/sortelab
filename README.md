@@ -90,6 +90,8 @@ A aplicação foi estruturada para permitir evolução contínua, com possibilid
 
 Projeto desenvolvido com foco em prática real de desenvolvimento, organização de código e construção de aplicações completas.
 
+sortelab.vercel.app
+
 ---
 
 **Caíque Brandão**  

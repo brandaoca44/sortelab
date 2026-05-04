@@ -90,7 +90,7 @@ A aplicação foi estruturada para permitir evolução contínua, com possibilid
 
 Projeto desenvolvido com foco em prática real de desenvolvimento, organização de código e construção de aplicações completas.
 
-[Projeto Online](sortelab.vercel.app)
+[Projeto Online](https://sortelab.vercel.app)
 
 ---
 
